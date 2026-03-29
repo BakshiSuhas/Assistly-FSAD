@@ -51,6 +51,13 @@ def list_pending_admin_access_requests(db):
     return list(_admin_requests(db).find({"status": "pending"}).sort("created_at", -1))
 
 
+def get_latest_admin_access_request_for_user(db, user_id: str):
+    return _admin_requests(db).find_one(
+        {"user_id": user_id},
+        sort=[("created_at", -1)],
+    )
+
+
 def get_admin_access_request(db, request_id: str):
     oid = _to_object_id(request_id)
     if not oid:

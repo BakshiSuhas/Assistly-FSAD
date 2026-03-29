@@ -320,6 +320,7 @@ def approve_admin_access(request_id):
         {"_id": community_oid},
         {"$set": {"admin_id": user_id}, "$addToSet": {"members": user_id}},
     )
+    db["users"].update_one({"_id": ObjectId(user_id)}, {"$set": {"role": "admin"}})
     set_admin_access_request_status(db, request_id, "approved", current_user.id)
     flash("Admin access approved and assigned to community.", "success")
     return redirect(url_for("dashboard.admin_dashboard"))

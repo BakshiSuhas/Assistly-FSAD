@@ -12,6 +12,7 @@ from models.community_model import (
     ensure_default_communities,
     get_community,
     get_shared_communities,
+    list_communities,
     invite_user_to_community,
     list_communities_scoped,
     list_community_direct_messages,
@@ -272,6 +273,7 @@ def communities_page():
     ensure_default_communities(db)
     search = request.args.get("q", "").strip()
     communities = list_communities_scoped(db, current_user.id, include_all=is_maintainer(), search=search or None)
+    all_community_names = [str(c.get("name", "")).strip() for c in list_communities(db)]
 
     manageable_communities = []
     pending_user_ids: set[str] = set()
@@ -352,6 +354,7 @@ def communities_page():
     return render_template(
         "communities.html",
         communities=communities,
+        all_community_names=all_community_names,
         query=search,
         is_maintainer=is_maintainer(),
         my_invites=my_invites,
