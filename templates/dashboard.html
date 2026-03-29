@@ -4,145 +4,136 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 {% endblock %}
 {% block content %}
-<div class="dashboard-page">
-<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-    <div>
-        <h2>User Dashboard</h2>
-        <div class="text-secondary">Switch mode to request help or volunteer for others.</div>
-        <div id="notificationBadge" class="small text-secondary mt-1">Checking notifications...</div>
-    </div>
-    <div class="d-flex align-items-center gap-2">
-        <label class="form-label mb-0">Mode:</label>
-        <select id="modeSelector" class="form-select form-select-sm" style="width: 160px;" data-current-mode="{{ mode }}">
-            <option value="resident" {% if mode == 'resident' %}selected{% endif %}>Resident Mode</option>
-            <option value="volunteer" {% if mode == 'volunteer' %}selected{% endif %}>Volunteer Mode</option>
-        </select>
-    </div>
-</div>
-
-<div class="row g-3 mb-3">
-    <div class="col-lg-7">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h5 class="mb-0">Map Integration</h5>
-                    <button class="btn btn-sm btn-outline-secondary" id="detectLocationBtn" type="button">Detect Current Location</button>
-                </div>
-                <div id="map" class="map-frame"></div>
-                <p class="small text-secondary mt-2 mb-0">Select a location on map. Coordinates are auto-filled in request form.</p>
+<div class="dashboard-page page-shell">
+    <section class="hero-panel mb-4">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+                <h2 class="mb-1">Community Operations Hub</h2>
+                <p class="text-secondary mb-1">Manage requests, coordinate volunteers, and stay updated in one place.</p>
+                <div id="notificationBadge" class="small text-secondary">Checking notifications...</div>
             </div>
-        </div>
-    </div>
-    <div class="col-lg-5">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5>Communities</h5>
-                {% for c in communities[:5] %}
-                <div class="d-flex justify-content-between border-bottom py-2">
-                    <span>{{ c.name }}</span>
-                    <span class="small text-secondary">{{ c.location }}</span>
-                </div>
-                {% endfor %}
-                <a class="btn btn-sm btn-outline-primary mt-3" href="{{ url_for('communities.communities_page') }}">Browse Communities</a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="residentSection" {% if mode != 'resident' %}style="display:none;"{% endif %}>
-    <div class="card mb-3">
-        <div class="card-body d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Resident Mode - My Requests</h5>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createRequestModal">Create Request</button>
-        </div>
-    </div>
-    <div class="request-grid">
-        {% for req in my_requests %}
-        <div class="request-card">
-            <div class="request-meta">
-                <span class="chip chip-primary">{{ req.category }}</span>
-                <span class="chip chip-success">{{ req.status }}</span>
-            </div>
-            <h6>{{ req.title }}</h6>
-            <p class="small text-secondary">{{ req.description }}</p>
-            <form method="post" action="{{ url_for('requests.update_status_route', request_id=req._id) }}" class="mb-2">
-                <div class="input-group input-group-sm">
-                    <select name="status" class="form-select">
-                        <option {% if req.status == 'Open' %}selected{% endif %}>Open</option>
-                        <option {% if req.status == 'In Progress' %}selected{% endif %}>In Progress</option>
-                        <option {% if req.status == 'Completed' %}selected{% endif %}>Completed</option>
-                    </select>
-                    <button class="btn btn-outline-primary" type="submit">Update</button>
-                </div>
-            </form>
-            <form method="post" action="{{ url_for('requests.delete_request_route', request_id=req._id) }}">
-                <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
-            </form>
-        </div>
-        {% else %}
-        <p class="text-secondary">No requests yet.</p>
-        {% endfor %}
-    </div>
-</div>
-
-<div id="volunteerSection" {% if mode != 'volunteer' %}style="display:none;"{% endif %}>
-    <div class="card mb-3"><div class="card-body"><h5 class="mb-0">Volunteer Mode - Available Requests</h5></div></div>
-    <div class="request-grid">
-        {% for req in volunteer_requests %}
-        <div class="request-card">
-            <div class="request-meta">
-                <span class="chip chip-primary">{{ req.category }}</span>
-                <span class="chip chip-warning">{{ req.status }}</span>
-            </div>
-            <h6>{{ req.title }}</h6>
-            <p class="small text-secondary">{{ req.description }}</p>
-            {% if req.status == 'Open' %}
-            <form method="post" action="{{ url_for('requests.accept_request_route', request_id=req._id) }}" class="mb-2">
-                <button class="btn btn-sm btn-success" type="submit">Accept Request</button>
-            </form>
-            {% endif %}
-            {% if req.accepted_by == current_user.id and req.status == 'In Progress' %}
-            <form method="post" action="{{ url_for('requests.complete_request_route', request_id=req._id) }}">
-                <button class="btn btn-sm btn-outline-success" type="submit">Mark Completed</button>
-            </form>
-            {% endif %}
-        </div>
-        {% else %}
-        <p class="text-secondary">No volunteer requests available.</p>
-        {% endfor %}
-    </div>
-</div>
-
-<div class="modal fade" id="createRequestModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Create Help Request</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <form method="post" action="{{ url_for('requests.create_request_route') }}">
-      <div class="modal-body">
-          <div class="row g-3">
-              <div class="col-md-6"><label class="form-label">Title</label><input class="form-control" name="title" required></div>
-              <div class="col-md-6"><label class="form-label">Category</label>
-                <select class="form-select" name="category" required>
-                    <option>Medical</option><option>Groceries</option><option>Transportation</option><option>Emergency</option><option>Elderly Support</option>
+            <div class="mode-switch-wrap">
+                <label class="form-label mb-1">Working Mode</label>
+                <select id="modeSelector" class="form-select" data-current-mode="{{ mode }}">
+                    <option value="resident" {% if mode == 'resident' %}selected{% endif %}>Resident Mode</option>
+                    <option value="volunteer" {% if mode == 'volunteer' %}selected{% endif %}>Volunteer Mode</option>
                 </select>
-              </div>
-              <div class="col-12"><label class="form-label">Description</label><textarea class="form-control" name="description" rows="3" required></textarea></div>
-              <div class="col-md-6"><label class="form-label">Location Text</label><input class="form-control" name="location_text" placeholder="Area or address"></div>
-              <input type="hidden" id="latField" name="lat">
-              <input type="hidden" id="lngField" name="lng">
-          </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="submit" class="btn btn-primary">Create Request</button>
-      </div>
-      </form>
-    </div>
-  </div>
-</div>
+            </div>
+        </div>
+        <div class="kpi-grid mt-3">
+            <div class="kpi-card"><div class="kpi-label">My Requests</div><div class="kpi-value">{{ my_requests|length }}</div></div>
+            <div class="kpi-card"><div class="kpi-label">Open</div><div class="kpi-value">{{ my_requests|selectattr('status','equalto','Open')|list|length }}</div></div>
+            <div class="kpi-card"><div class="kpi-label">In Progress</div><div class="kpi-value">{{ my_requests|selectattr('status','equalto','In Progress')|list|length }}</div></div>
+            <div class="kpi-card"><div class="kpi-label">Completed</div><div class="kpi-value">{{ my_requests|selectattr('status','equalto','Completed')|list|length }}</div></div>
+        </div>
+    </section>
+
+    <section class="row g-3 mb-4">
+        <div class="col-xl-8">
+            <div class="card h-100 section-card">
+                <div class="card-body">
+                    <div class="panel-head">
+                        <h5 class="mb-0">Location & Coverage Map</h5>
+                        <button class="btn btn-sm btn-outline-secondary" id="detectLocationBtn" type="button">Detect Current Location</button>
+                    </div>
+                    <div id="map" class="map-frame mt-3"></div>
+                    <p class="small text-secondary mt-2 mb-0">Select location on map to auto-fill request coordinates.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card h-100 section-card">
+                <div class="card-body">
+                    <div class="panel-head mb-2">
+                        <h5 class="mb-0">My Communities</h5>
+                        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('communities.communities_page') }}">Browse</a>
+                    </div>
+                    <div class="compact-list">
+                        {% for c in communities[:6] %}
+                        <div class="compact-list-item">
+                            <div class="fw-semibold">{{ c.name }}</div>
+                            <div class="small text-secondary">{{ c.location }}</div>
+                        </div>
+                        {% else %}
+                        <p class="text-secondary mb-0">No communities available yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="residentSection" {% if mode != 'resident' %}style="display:none;"{% endif %}>
+        <div class="card section-card mb-3">
+            <div class="card-body panel-head">
+                <div>
+                    <h5 class="mb-1">Resident Queue</h5>
+                    <p class="small text-secondary mb-0">Create requests and keep statuses up to date.</p>
+                </div>
+                <a href="{{ url_for('requests.create_request_page') }}" class="btn btn-primary">Create Request</a>
+            </div>
+        </div>
+        <div class="request-grid">
+            {% for req in my_requests %}
+            <article class="request-card clean-card">
+                <div class="request-meta">
+                    <span class="chip chip-primary">{{ req.category }}</span>
+                    <span class="chip chip-success">{{ req.status }}</span>
+                </div>
+                <h6>{{ req.title }}</h6>
+                <p class="small text-secondary">{{ req.description }}</p>
+                <form method="post" action="{{ url_for('requests.update_status_route', request_id=req._id) }}" class="mb-2">
+                    <div class="input-group input-group-sm">
+                        <select name="status" class="form-select">
+                            <option {% if req.status == 'Open' %}selected{% endif %}>Open</option>
+                            <option {% if req.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                            <option {% if req.status == 'Completed' %}selected{% endif %}>Completed</option>
+                        </select>
+                        <button class="btn btn-outline-primary" type="submit">Update</button>
+                    </div>
+                </form>
+                <form method="post" action="{{ url_for('requests.delete_request_route', request_id=req._id) }}">
+                    <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                </form>
+            </article>
+            {% else %}
+            <div class="empty-state">No requests yet. Create your first request to get support quickly.</div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section id="volunteerSection" {% if mode != 'volunteer' %}style="display:none;"{% endif %}>
+        <div class="card section-card mb-3">
+            <div class="card-body">
+                <h5 class="mb-1">Volunteer Feed</h5>
+                <p class="small text-secondary mb-0">Available requests from communities where you are a member.</p>
+            </div>
+        </div>
+        <div class="request-grid">
+            {% for req in volunteer_requests %}
+            <article class="request-card clean-card">
+                <div class="request-meta">
+                    <span class="chip chip-primary">{{ req.category }}</span>
+                    <span class="chip chip-warning">{{ req.status }}</span>
+                </div>
+                <h6>{{ req.title }}</h6>
+                <p class="small text-secondary">{{ req.description }}</p>
+                {% if req.status == 'Open' %}
+                <form method="post" action="{{ url_for('requests.accept_request_route', request_id=req._id) }}" class="mb-2">
+                    <button class="btn btn-sm btn-success" type="submit">Accept Request</button>
+                </form>
+                {% endif %}
+                {% if req.accepted_by == current_user.id and req.status == 'In Progress' %}
+                <form method="post" action="{{ url_for('requests.complete_request_route', request_id=req._id) }}">
+                    <button class="btn btn-sm btn-outline-success" type="submit">Mark Completed</button>
+                </form>
+                {% endif %}
+            </article>
+            {% else %}
+            <div class="empty-state">No volunteer requests available right now. Join more communities to increase visibility.</div>
+            {% endfor %}
+        </div>
+    </section>
 </div>
 {% endblock %}
 {% block scripts %}

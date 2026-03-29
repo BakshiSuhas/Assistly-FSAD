@@ -163,3 +163,9 @@ def delete_community(db, community_id: str):
     if not oid:
         return None
     return _communities(db).delete_one({"_id": oid})
+
+
+def get_user_communities(db, user_id: str):
+    """Get all communities the user is a member of (approved requests only)."""
+    communities = _communities(db).find({"members": user_id}).sort("name", 1)
+    return [_sanitize_community_shape(db, c) for c in communities]

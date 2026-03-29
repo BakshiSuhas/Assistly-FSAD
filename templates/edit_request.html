@@ -1,11 +1,15 @@
 {% extends 'base.html' %}
 {% block title %}Assistly | Edit Request{% endblock %}
 {% block content %}
+<div class="page-shell">
+    <section class="hero-panel">
+        <h2 class="mb-1">Edit Help Request</h2>
+        <p class="text-secondary mb-0">Update information to keep volunteers aligned with your current need.</p>
+    </section>
 <div class="row justify-content-center">
-    <div class="col-xl-9">
-        <div class="card">
+    <div class="col-xl-10">
+        <div class="card section-card">
             <div class="card-body">
-                <h3 class="card-title mb-3">Edit Request</h3>
                 <form method="post">
                     <div class="mb-3">
                         <label class="form-label">Title</label>
@@ -58,5 +62,6 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}

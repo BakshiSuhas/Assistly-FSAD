@@ -1,9 +1,16 @@
 {% extends 'base.html' %}
 {% block title %}Assistly | Signup{% endblock %}
 {% block content %}
+<div class="page-shell">
+<section class="hero-panel">
+    <h2 class="mb-1">Create Your Assistly Access</h2>
+    <p class="text-secondary mb-0">Register as a user and optionally request community-admin access for maintainer review.</p>
+</section>
 <div class="row justify-content-center">
-    <div class="col-md-7 col-lg-6">
-        <div class="card auth-card">
+    <div class="col-lg-10">
+        <div class="row g-3">
+            <div class="col-md-6">
+        <div class="card auth-card section-card">
             <div class="card-body p-4">
                 <h3 class="mb-1">Create your Assistly account</h3>
                 <p class="text-secondary mb-4">Start posting requests, volunteering, and connecting with nearby communities.</p>
@@ -28,15 +35,43 @@
                         <label class="form-label">Password</label>
                         <input type="password" name="password" class="form-control" autocomplete="new-password" minlength="6" placeholder="At least 6 characters" required>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Admin code (optional)</label>
-                        <input type="text" name="admin_code" class="form-control" placeholder="Use only for admin creation">
-                    </div>
                     <button type="submit" class="btn btn-primary w-100">Create Account</button>
                 </form>
                 <div class="small text-secondary mt-3 text-center">Already registered? <a href="{{ url_for('auth.login') }}">Log in instead</a></div>
             </div>
         </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card auth-card section-card">
+                    <div class="card-body p-4">
+                        <h3 class="mb-1">Request Community Admin Access</h3>
+                        <p class="text-secondary mb-4">Any user can request to become a community admin. Approval is handled by the code maintainer (2410030063@gmail.com).</p>
+                        <form method="post" action="{{ url_for('auth.request_admin_access') }}">
+                            <div class="mb-3">
+                                <label class="form-label">Your Account Email</label>
+                                <input type="email" name="email" class="form-control" autocomplete="email" placeholder="name@example.com" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Your Password</label>
+                                <input type="password" name="password" class="form-control" autocomplete="current-password" placeholder="Enter your account password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Community</label>
+                                <select name="community_id" class="form-select" required>
+                                    <option value="">Select community</option>
+                                    {% for community in communities %}
+                                    <option value="{{ community._id }}">{{ community.name }} ({{ community.location }})</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Submit your request for maintainer review.</div>
+                            </div>
+                            <button type="submit" class="btn btn-outline-primary w-100">Send Admin Request</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 </div>
 {% endblock %}

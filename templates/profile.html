@@ -1,9 +1,14 @@
 {% extends 'base.html' %}
 {% block title %}Assistly | Profile{% endblock %}
 {% block content %}
+<div class="page-shell">
+<section class="hero-panel">
+    <h2 class="mb-1">Profile & Reputation</h2>
+    <p class="text-secondary mb-0">Manage your personal details and review completed contribution history.</p>
+</section>
 <div class="row g-3">
     <div class="col-lg-5">
-        <div class="card">
+        <div class="card section-card">
             <div class="card-body">
                 <h4 class="mb-3">Profile</h4>
                 <form method="post">
@@ -24,7 +29,7 @@
         </div>
     </div>
     <div class="col-lg-7">
-        <div class="card">
+        <div class="card section-card">
             <div class="card-body">
                 <h5>Completed Help History</h5>
                 {% if history %}
@@ -43,5 +48,6 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}

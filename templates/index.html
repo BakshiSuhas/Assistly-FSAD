@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Assistly | Home{% endblock %}
 {% block content %}
+<div class="page-shell">
 <section class="hero-box mb-4 hero-splash">
     <div class="row align-items-center g-4">
         <div class="col-lg-7">
@@ -13,7 +14,7 @@
             </div>
         </div>
         <div class="col-lg-5">
-            <div class="card">
+            <div class="card section-card">
                 <div class="card-body">
                     <h5>What you can do in minutes</h5>
                     <ul class="mb-0">
@@ -60,8 +61,9 @@
 </section>
 
 <section id="services" class="row g-3">
-    <div class="col-md-4"><div class="card h-100"><div class="card-body"><h5>Request Management</h5><p class="text-secondary">Create, update, and manage service requests with status tracking.</p></div></div></div>
-    <div class="col-md-4"><div class="card h-100"><div class="card-body"><h5>Volunteer Workflow</h5><p class="text-secondary">Accept eligible requests and mark tasks completed when done.</p></div></div></div>
-    <div class="col-md-4"><div class="card h-100"><div class="card-body"><h5>Community Operations</h5><p class="text-secondary">Browse, join, and manage communities with role-based controls.</p></div></div></div>
+    <div class="col-md-4"><div class="card section-card h-100"><div class="card-body"><h5>Request Management</h5><p class="text-secondary">Create, update, and manage service requests with status tracking.</p></div></div></div>
+    <div class="col-md-4"><div class="card section-card h-100"><div class="card-body"><h5>Volunteer Workflow</h5><p class="text-secondary">Accept eligible requests and mark tasks completed when done.</p></div></div></div>
+    <div class="col-md-4"><div class="card section-card h-100"><div class="card-body"><h5>Community Operations</h5><p class="text-secondary">Browse, join, and manage communities with role-based controls.</p></div></div></div>
 </section>
+</div>
 {% endblock %}

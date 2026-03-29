@@ -1,8 +1,12 @@
 {% extends 'base.html' %}
 {% block title %}Assistly | Notifications{% endblock %}
 {% block content %}
-<h2 class="mb-3">Notifications</h2>
-<div class="card">
+<div class="page-shell">
+<section class="hero-panel">
+    <h2 class="mb-1">Notifications</h2>
+    <p class="text-secondary mb-0">Track important updates, approvals, and task changes in one timeline.</p>
+</section>
+<div class="card section-card">
     <div class="card-body activity-list">
         {% if feed %}
             {% for item in feed %}
@@ -15,5 +19,6 @@
             <p class="text-secondary mb-0">No notifications yet.</p>
         {% endif %}
     </div>
+</div>
 </div>
 {% endblock %}

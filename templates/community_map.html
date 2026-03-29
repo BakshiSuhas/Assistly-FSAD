@@ -1,10 +1,14 @@
 {% extends 'base.html' %}
 {% block title %}Assistly | Community Map{% endblock %}
 {% block content %}
-<h2 class="mb-3">Community Map</h2>
+<div class="page-shell">
+<section class="hero-panel">
+    <h2 class="mb-1">Community Map</h2>
+    <p class="text-secondary mb-0">View regional coverage, communities, and ongoing requests from a single map workspace.</p>
+</section>
 <div class="row g-3">
     <div class="col-xl-8">
-        <div class="card">
+        <div class="card section-card">
             <div class="card-body">
                 <h6>Nearby Coverage (Simple Map View)</h6>
                 <iframe class="map-frame" title="Community Map" src="https://www.openstreetmap.org/export/embed.html?bbox=77.55%2C12.90%2C77.65%2C13.02&layer=mapnik"></iframe>
@@ -13,7 +17,7 @@
         </div>
     </div>
     <div class="col-xl-4">
-        <div class="card mb-3">
+        <div class="card section-card mb-3">
             <div class="card-body">
                 <h6>Communities</h6>
                 {% for community in communities %}
@@ -24,7 +28,7 @@
                 {% endfor %}
             </div>
         </div>
-        <div class="card">
+        <div class="card section-card">
             <div class="card-body">
                 <h6>Open Requests</h6>
                 {% for req in requests %}
@@ -36,5 +40,6 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}

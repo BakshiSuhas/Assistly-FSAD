@@ -11,12 +11,32 @@ from models.request_model import (
     update_request,
     update_request_status,
 )
+from models.community_model import get_user_communities
 
 
 requests_bp = Blueprint("requests", __name__, url_prefix="/requests")
 
 ALLOWED_CATEGORIES = ["Medical", "Groceries", "Transportation", "Emergency", "Elderly Support"]
 ALLOWED_STATUSES = {"Open", "In Progress", "Completed"}
+
+
+@requests_bp.route("/create", methods=["GET"])
+@login_required
+def create_request_page():
+    """Display the create request form with user's joined communities."""
+    user_communities = get_user_communities(current_app.db, current_user.id)
+    
+    if not user_communities:
+        flash("You must join a community before creating a request.", "warning")
+        return redirect(url_for("communities.communities_page"))
+    
+    emergency = request.args.get("emergency", "0") == "1"
+    return render_template(
+        "create_request.html",
+        communities=user_communities,
+        emergency=emergency,
+        categories=ALLOWED_CATEGORIES,
+    )
 
 
 def _validate_payload(form_or_json: dict):
@@ -48,12 +68,27 @@ def _validate_payload(form_or_json: dict):
 @requests_bp.route("/create", methods=["POST"])
 @login_required
 def create_request_route():
+    community_id = request.form.get("community_id", "").strip()
+    
+    # Validate community_id
+    if not community_id:
+        flash("Please select a community.", "danger")
+        return redirect(url_for("requests.create_request_page"))
+    
+    # Verify user is member of this community
+    user_communities = get_user_communities(current_app.db, current_user.id)
+    community_ids = [str(c["_id"]) for c in user_communities]
+    
+    if community_id not in community_ids:
+        flash("You are not a member of this community.", "danger")
+        return redirect(url_for("requests.create_request_page"))
+    
     payload, error = _validate_payload(request.form)
     if error:
         flash(error, "danger")
-        return redirect(url_for("dashboard.user_dashboard"))
+        return redirect(url_for("requests.create_request_page"))
 
-    create_request(current_app.db, payload, current_user.id)
+    create_request(current_app.db, payload, current_user.id, community_id)
     flash("Request created.", "success")
     return redirect(url_for("dashboard.user_dashboard"))
 
