@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 {% block title %}Assistly | Resident Dashboard{% endblock %}
 {% block content %}
+<div class="page-shell">
+<section class="hero-panel">
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
     <div>
         <h2 class="mb-0">Resident Dashboard</h2>
@@ -11,6 +13,7 @@
         <a href="{{ url_for('request_routes.create_request_page', emergency='1') }}" class="btn btn-warning"><i class="bi bi-exclamation-triangle-fill me-1"></i>Emergency</a>
     </div>
 </div>
+</section>
 
 <div class="row g-3 mb-3">
     <div class="col-md-3"><div class="stats-card"><div class="small text-secondary">My Requests</div><div class="metric">{{ requests|length }}</div></div></div>
@@ -21,7 +24,7 @@
 
 <div class="row g-3">
     <div class="col-xl-8">
-        <div class="card">
+        <div class="card section-card">
             <div class="card-body">
                 <h5 class="mb-3">My Help Requests</h5>
                 {% if requests %}
@@ -56,7 +59,7 @@
         </div>
     </div>
     <div class="col-xl-4">
-        <div class="card mb-3">
+        <div class="card section-card mb-3">
             <div class="card-body">
                 <h6 class="mb-3">Browse Volunteers</h6>
                 {% for volunteer in volunteers %}
@@ -70,7 +73,7 @@
                 {% endfor %}
             </div>
         </div>
-        <div class="card">
+        <div class="card section-card">
             <div class="card-body activity-list">
                 <h6 class="mb-2">Activity Feed</h6>
                 {% for item in activity_feed %}
@@ -82,5 +85,6 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}

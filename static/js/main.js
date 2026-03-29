@@ -1,4 +1,30 @@
 document.addEventListener("DOMContentLoaded", () => {
+    const root = document.documentElement;
+    const themeToggle = document.getElementById("themeToggle");
+    const storedTheme = localStorage.getItem("assistly-theme");
+    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const initialTheme = storedTheme || (prefersDark ? "dark" : "light");
+
+    function applyTheme(theme) {
+        root.setAttribute("data-theme", theme);
+        if (themeToggle) {
+            const icon = themeToggle.querySelector("i");
+            if (icon) {
+                icon.className = theme === "dark" ? "bi bi-moon-stars-fill" : "bi bi-sun-fill";
+            }
+        }
+    }
+
+    applyTheme(initialTheme);
+
+    if (themeToggle) {
+        themeToggle.addEventListener("click", () => {
+            const nextTheme = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+            localStorage.setItem("assistly-theme", nextTheme);
+            applyTheme(nextTheme);
+        });
+    }
+
     const modeSelector = document.getElementById("modeSelector");
     if (modeSelector) {
         modeSelector.addEventListener("change", async (event) => {

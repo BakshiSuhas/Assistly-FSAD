@@ -1,13 +1,26 @@
 {% extends 'base.html' %}
 {% block title %}Assistly | Login{% endblock %}
 {% block content %}
+<div class="page-shell">
+<section class="hero-panel text-center">
+    <h2 class="mb-1">Welcome to Assistly</h2>
+    <p class="text-secondary mb-0">Choose your access type and continue to your workspace.</p>
+</section>
 <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card auth-card">
+    <div class="col-md-8 col-lg-6">
+        <div class="card auth-card section-card">
             <div class="card-body p-4">
-                <h3 class="mb-1">Welcome back</h3>
-                <p class="text-secondary mb-4">Sign in to manage requests, collaborate with volunteers, and track progress.</p>
-                <form method="post">
+                <h3 class="mb-1">Login</h3>
+                <p id="loginModeHelp" class="text-secondary mb-3">Sign in as resident/volunteer to create requests and help your community.</p>
+
+                <div class="btn-group w-100 mb-4" role="group" aria-label="Login type selector">
+                    <button type="button" class="btn btn-outline-primary login-mode-btn active" data-login-mode="user">As User</button>
+                    <button type="button" class="btn btn-outline-primary login-mode-btn" data-login-mode="admin">As Admin</button>
+                    <button type="button" class="btn btn-outline-primary login-mode-btn" data-login-mode="maintainer">As Maintainer</button>
+                </div>
+
+                <form method="post" action="{{ url_for('auth.login') }}">
+                    <input type="hidden" name="login_as" value="user">
                     <div class="mb-3">
                         <label class="form-label">Email</label>
                         <input type="email" name="email" class="form-control" autocomplete="email" placeholder="name@example.com" required>
@@ -16,7 +29,7 @@
                         <label class="form-label">Password</label>
                         <input type="password" name="password" class="form-control" autocomplete="current-password" placeholder="Enter your password" required>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                    <button id="loginSubmitBtn" type="submit" class="btn btn-primary w-100">Login as User</button>
                 </form>
                 <div class="d-flex align-items-center gap-2 my-3">
                     <hr class="flex-grow-1 my-0">
@@ -29,6 +42,52 @@
                 <div class="small text-secondary mt-3 text-center">New here? <a href="{{ url_for('auth.signup') }}">Create an account</a></div>
             </div>
         </div>
+        <div class="small text-secondary mt-3 text-center">Need admin rights? <a href="{{ url_for('auth.signup') }}">Send admin request from signup page</a></div>
     </div>
 </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modeButtons = Array.from(document.querySelectorAll(".login-mode-btn"));
+    const hiddenField = document.querySelector("input[name='login_as']");
+    const submitBtn = document.getElementById("loginSubmitBtn");
+    const helpText = document.getElementById("loginModeHelp");
+
+    const modeMeta = {
+        user: {
+            button: "Login as User",
+            help: "Sign in as resident/volunteer to create requests and help your community.",
+        },
+        admin: {
+            button: "Login as Admin",
+            help: "Use this after maintainer approval for community-admin access.",
+        },
+        maintainer: {
+            button: "Login as Maintainer",
+            help: "Maintainer mode is only for 2410030063@gmail.com.",
+        },
+    };
+
+    function setMode(mode) {
+        hiddenField.value = mode;
+        submitBtn.textContent = modeMeta[mode].button;
+        helpText.textContent = modeMeta[mode].help;
+        modeButtons.forEach((btn) => {
+            const active = btn.dataset.loginMode === mode;
+            btn.classList.toggle("active", active);
+            btn.classList.toggle("btn-primary", active);
+            btn.classList.toggle("btn-outline-primary", !active);
+        });
+    }
+
+    modeButtons.forEach((btn) => {
+        btn.addEventListener("click", () => setMode(btn.dataset.loginMode));
+    });
+
+    setMode("user");
+});
+</script>
 {% endblock %}

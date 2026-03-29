@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% block title %}Assistly | Home{% endblock %}
 {% block content %}
-<section class="hero-box mb-4">
+<div class="page-shell">
+<section class="hero-box mb-4 hero-splash">
     <div class="row align-items-center g-4">
         <div class="col-lg-7">
             <h1 class="display-6 mb-3">Care Coordination Built for Real Communities</h1>
@@ -33,7 +34,7 @@
 <section class="row g-3 mb-4">
     {% for community in communities %}
     <div class="col-md-4">
-        <div class="card h-100">
+        <div class="card section-card h-100">
             <div class="card-body">
                 <div class="chip chip-primary mb-2">Community</div>
                 <h5>{{ community.name }}</h5>
@@ -46,8 +47,9 @@
 </section>
 
 <section class="row g-3">
-    <div class="col-md-4"><div class="card h-100"><div class="card-body"><h5>Resident Mode</h5><p class="text-secondary">Create emergency or regular requests, track status, and find nearby volunteers.</p></div></div></div>
-    <div class="col-md-4"><div class="card h-100"><div class="card-body"><h5>Volunteer Mode</h5><p class="text-secondary">Filter tasks by category, accept requests, and mark support actions completed.</p></div></div></div>
-    <div class="col-md-4"><div class="card h-100"><div class="card-body"><h5>Operations Visibility</h5><p class="text-secondary">Measure response performance with analytics charts, feed activity, and completion trends.</p></div></div></div>
+    <div class="col-md-4"><div class="card section-card h-100"><div class="card-body"><h5>Resident Mode</h5><p class="text-secondary">Create emergency or regular requests, track status, and find nearby volunteers.</p></div></div></div>
+    <div class="col-md-4"><div class="card section-card h-100"><div class="card-body"><h5>Volunteer Mode</h5><p class="text-secondary">Filter tasks by category, accept requests, and mark support actions completed.</p></div></div></div>
+    <div class="col-md-4"><div class="card section-card h-100"><div class="card-body"><h5>Operations Visibility</h5><p class="text-secondary">Measure response performance with analytics charts, feed activity, and completion trends.</p></div></div></div>
 </section>
+</div>
 {% endblock %}

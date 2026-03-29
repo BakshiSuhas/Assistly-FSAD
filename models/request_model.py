@@ -6,13 +6,14 @@ def _requests(db):
     return db["requests"]
 
 
-def create_request(db, payload: dict, user_id: str):
+def create_request(db, payload: dict, user_id: str, community_id: str | None = None):
     doc = {
         "title": payload["title"].strip(),
         "description": payload["description"].strip(),
         "category": payload["category"].strip(),
         "status": "Open",
         "user_id": user_id,
+        "community_id": community_id,
         "accepted_by": None,
         "location": {
             "text": payload.get("location_text", "").strip(),
@@ -33,6 +34,22 @@ def list_open_requests_for_volunteer(db, user_id: str):
     return list(
         _requests(db)
         .find({"status": {"$in": ["Open", "In Progress"]}, "user_id": {"$ne": user_id}})
+        .sort("created_at", -1)
+    )
+
+
+def list_open_requests_for_volunteer_in_communities(db, user_id: str, community_ids: list):
+    """Get open requests from communities the user is a member of."""
+    if not community_ids:
+        return []
+    
+    return list(
+        _requests(db)
+        .find({
+            "community_id": {"$in": community_ids},
+            "status": {"$in": ["Open", "In Progress"]},
+            "user_id": {"$ne": user_id}
+        })
         .sort("created_at", -1)
     )
 

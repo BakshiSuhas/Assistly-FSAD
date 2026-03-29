@@ -8,6 +8,8 @@ from flask import Blueprint, current_app, flash, redirect, render_template, requ
 from flask_login import current_user, login_required, login_user, logout_user
 from pymongo.errors import PyMongoError
 
+from models.admin_request_model import create_admin_access_request
+from models.community_model import ensure_default_communities, get_community, list_communities
 from models.user_model import (
     create_google_user,
     create_user_with_hash,
@@ -21,10 +23,15 @@ from models.user_model import (
 auth_bp = Blueprint("auth", __name__)
 
 EMAIL_RE = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
+MAINTAINER_EMAIL = "2410030063@gmail.com"
 
 
 def _is_valid_email(email: str) -> bool:
     return bool(EMAIL_RE.match(email))
+
+
+def _is_maintainer_email(email: str) -> bool:
+    return str(email or "").strip().lower() == MAINTAINER_EMAIL
 
 
 def _send_verification_email(email: str, otp: str):
@@ -65,27 +72,30 @@ def signup():
 
         if not name or not email or not password:
             flash("All fields are required.", "danger")
-            return render_template("signup.html")
+            ensure_default_communities(current_app.db)
+            return render_template("signup.html", communities=list_communities(current_app.db))
         if not _is_valid_email(email):
             flash("Please enter a valid email address.", "danger")
-            return render_template("signup.html")
+            ensure_default_communities(current_app.db)
+            return render_template("signup.html", communities=list_communities(current_app.db))
         if len(password) < 6:
             flash("Password must be at least 6 characters.", "danger")
-            return render_template("signup.html")
+            ensure_default_communities(current_app.db)
+            return render_template("signup.html", communities=list_communities(current_app.db))
 
         db = current_app.db
         try:
             if find_user_by_email(db, email):
                 flash("Email already registered.", "warning")
-                return render_template("signup.html")
+                ensure_default_communities(db)
+                return render_template("signup.html", communities=list_communities(db))
 
-            role = "admin" if request.form.get("admin_code") == "ASSISTLY_ADMIN" else "user"
             otp = f"{random.randint(0, 999999):06d}"
             verification_doc = {
                 "name": name,
                 "email": email,
                 "password_hash": hash_password(password),
-                "role": role,
+                "role": "user",
                 "otp": otp,
                 "expires_at": datetime.utcnow() + timedelta(minutes=10),
                 "created_at": datetime.utcnow(),
@@ -100,12 +110,16 @@ def signup():
             return redirect(url_for("auth.verify_email", email=email))
         except RuntimeError as ex:
             flash(str(ex), "danger")
-            return render_template("signup.html")
+            ensure_default_communities(db)
+            return render_template("signup.html", communities=list_communities(db))
         except PyMongoError:
             flash("Database connection failed. Please check MongoDB Atlas network access and TLS settings.", "danger")
-            return render_template("signup.html")
+            ensure_default_communities(db)
+            return render_template("signup.html", communities=list_communities(db))
 
-    return render_template("signup.html")
+    db = current_app.db
+    ensure_default_communities(db)
+    return render_template("signup.html", communities=list_communities(db))
 
 
 @auth_bp.route("/verify-email", methods=["GET", "POST"])
@@ -222,6 +236,9 @@ def login():
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
+        login_as = request.form.get("login_as", "user")
+        if login_as not in {"user", "admin", "maintainer"}:
+            login_as = "user"
 
         db = current_app.db
         try:
@@ -230,15 +247,78 @@ def login():
                 flash("Invalid credentials.", "danger")
                 return render_template("login.html")
 
+            if login_as == "admin":
+                is_maintainer = _is_maintainer_email(user_doc.get("email", ""))
+                is_community_admin = db["communities"].count_documents({"admin_id": str(user_doc["_id"])}) > 0
+                if not is_maintainer and not is_community_admin:
+                    flash("Admin login requires approved maintainer/community-admin access.", "danger")
+                    return render_template("login.html")
+
+            if login_as == "maintainer" and not _is_maintainer_email(user_doc.get("email", "")):
+                flash("Maintainer login is allowed only for 2410030063@gmail.com.", "danger")
+                return render_template("login.html")
+
             user = get_user_object_by_id(db, str(user_doc["_id"]))
             login_user(user)
             flash("Logged in successfully.", "success")
+            if login_as == "maintainer":
+                return redirect(url_for("dashboard.admin_dashboard"))
+            if login_as == "admin":
+                if _is_maintainer_email(user_doc.get("email", "")):
+                    return redirect(url_for("dashboard.admin_dashboard"))
+                return redirect(url_for("communities.communities_page"))
             return redirect(url_for("dashboard.dashboard"))
         except PyMongoError:
             flash("Database connection failed. Please check MongoDB Atlas network access and TLS settings.", "danger")
             return render_template("login.html")
 
     return render_template("login.html")
+
+
+@auth_bp.route("/admin-access/request", methods=["POST"])
+def request_admin_access():
+    email = request.form.get("email", "").strip().lower()
+    password = request.form.get("password", "")
+    community_id = request.form.get("community_id", "").strip()
+
+    db = current_app.db
+    ensure_default_communities(db)
+
+    if not email or not password or not community_id:
+        flash("Email, password, and community are required for admin request.", "danger")
+        return redirect(url_for("auth.signup"))
+
+    user_doc = find_user_by_email(db, email)
+    if not user_doc or not verify_password(password, user_doc.get("password", "")):
+        flash("Invalid credentials for admin request.", "danger")
+        return redirect(url_for("auth.signup"))
+
+    if user_doc.get("role") == "admin":
+        flash("You already have maintainer-level admin access.", "info")
+        return redirect(url_for("auth.login"))
+
+    community = get_community(db, community_id)
+    if not community:
+        flash("Selected community was not found.", "danger")
+        return redirect(url_for("auth.signup"))
+
+    user_id = str(user_doc["_id"])
+
+    # A person can be admin for exactly one community.
+    if db["communities"].count_documents({"admin_id": user_id}) > 0:
+        flash("You are already assigned as community admin.", "info")
+        return redirect(url_for("auth.login"))
+
+    outcome = create_admin_access_request(db, user_id, community_id)
+    if not outcome["ok"]:
+        if outcome.get("reason") == "already_pending_any":
+            flash("You already have a pending admin request for another community.", "warning")
+            return redirect(url_for("auth.signup"))
+        flash("Your admin request is already pending review.", "warning")
+        return redirect(url_for("auth.signup"))
+
+    flash("Admin access request sent to maintainer for approval.", "success")
+    return redirect(url_for("auth.login"))
 
 
 @auth_bp.route("/logout")
