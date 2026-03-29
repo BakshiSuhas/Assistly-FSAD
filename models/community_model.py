@@ -1,5 +1,6 @@
 from bson.objectid import ObjectId
 from datetime import datetime
+import re
 
 
 def _communities(db):
@@ -19,6 +20,11 @@ def _to_object_id(value: str):
         return ObjectId(value)
     except Exception:
         return None
+
+
+def _normalize_community_name(value: str) -> str:
+    """Normalize community names for tolerant equality checks."""
+    return " ".join(str(value or "").strip().lower().split())
 
 
 def _sanitize_community_shape(db, community: dict):
@@ -209,7 +215,42 @@ def create_join_request_by_name(db, user_id: str, community_name: str):
     if not name:
         return "invalid"
 
-    community = _communities(db).find_one({"name": {"$regex": f"^{name}$", "$options": "i"}})
+    escaped_name = re.escape(name)
+    community = _communities(db).find_one({"name": {"$regex": f"^{escaped_name}$", "$options": "i"}})
+
+    # Fallback for partial name matches when user does not type exact punctuation/spacing.
+    if not community:
+        partial_matches = list(
+            _communities(db)
+            .find({"name": {"$regex": escaped_name, "$options": "i"}}, {"name": 1, "members": 1, "pending_requests": 1, "admin_id": 1})
+            .limit(2)
+        )
+        if len(partial_matches) == 1:
+            community = partial_matches[0]
+
+    # Fallback for legacy data where names may include uneven internal spacing.
+    if not community:
+        normalized_target = _normalize_community_name(name)
+        for candidate in _communities(db).find({}, {"name": 1, "members": 1, "pending_requests": 1, "admin_id": 1}):
+            if _normalize_community_name(candidate.get("name", "")) == normalized_target:
+                community = candidate
+                break
+
+    # Last fallback: token containment in normalized names (single best match only).
+    if not community:
+        normalized_target = _normalize_community_name(name)
+        candidate_match = None
+        for candidate in _communities(db).find({}, {"name": 1, "members": 1, "pending_requests": 1, "admin_id": 1}):
+            normalized_candidate = _normalize_community_name(candidate.get("name", ""))
+            if not normalized_candidate:
+                continue
+            if normalized_target in normalized_candidate or normalized_candidate in normalized_target:
+                if candidate_match is not None:
+                    candidate_match = None
+                    break
+                candidate_match = candidate
+        community = candidate_match
+
     if not community:
         return "not_found"
 

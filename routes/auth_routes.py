@@ -8,7 +8,7 @@ from flask import Blueprint, current_app, flash, redirect, render_template, requ
 from flask_login import current_user, login_required, login_user, logout_user
 from pymongo.errors import PyMongoError
 
-from models.admin_request_model import create_admin_access_request
+from models.admin_request_model import create_admin_access_request, get_latest_admin_access_request_for_user
 from models.community_model import ensure_default_communities, get_community, list_communities
 from models.user_model import (
     create_google_user,
@@ -249,9 +249,23 @@ def login():
 
             if login_as == "admin":
                 is_maintainer = _is_maintainer_email(user_doc.get("email", ""))
-                is_community_admin = db["communities"].count_documents({"admin_id": str(user_doc["_id"])}) > 0
-                if not is_maintainer and not is_community_admin:
-                    flash("Admin login requires approved maintainer/community-admin access.", "danger")
+                is_admin_role = user_doc.get("role") == "admin"
+                is_assigned_community_admin = db["communities"].count_documents({"admin_id": str(user_doc["_id"])}) > 0
+
+                # Auto-heal legacy records where approved community admins were not promoted to admin role.
+                if is_assigned_community_admin and not is_admin_role:
+                    db["users"].update_one({"_id": user_doc["_id"]}, {"$set": {"role": "admin"}})
+                    user_doc["role"] = "admin"
+                    is_admin_role = True
+
+                if not is_maintainer and not is_admin_role:
+                    latest_admin_request = get_latest_admin_access_request_for_user(db, str(user_doc["_id"]))
+                    if latest_admin_request and latest_admin_request.get("status") == "pending":
+                        flash("Your admin access request is still pending maintainer approval.", "warning")
+                    elif latest_admin_request and latest_admin_request.get("status") == "rejected":
+                        flash("Your admin access request was rejected. Please contact the maintainer.", "danger")
+                    else:
+                        flash("Admin login requires maintainer approval.", "danger")
                     return render_template("login.html")
 
             if login_as == "maintainer" and not _is_maintainer_email(user_doc.get("email", "")):

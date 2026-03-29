@@ -46,18 +46,27 @@
 <section class="card section-card mb-4">
     <div class="card-body">
         <div class="panel-head mb-2">
-            <h5 class="mb-0">Request Community Access</h5>
+            <h5 class="mb-0">Join Another Community</h5>
             <a class="btn btn-sm btn-outline-primary" href="{{ url_for('communities.personal_chat') }}">Open Personal Chat</a>
         </div>
         <form method="post" action="{{ url_for('communities.join_by_name') }}" class="row g-2">
             <div class="col-md-9">
-                <input class="form-control" name="community_name" placeholder="Enter exact community name" required>
+                <input class="form-control" name="community_name" list="community-name-suggestions" placeholder="Enter a community to join" required>
+                <datalist id="community-name-suggestions">
+                    {% for name in all_community_names %}
+                    <option value="{{ name }}"></option>
+                    {% endfor %}
+                </datalist>
             </div>
             <div class="col-md-3">
                 <button class="btn btn-primary w-100" type="submit">Send Request</button>
             </div>
         </form>
-        <div class="small text-secondary mt-2">Your request goes to the assigned community admin for approval.</div>
+        <div class="small text-secondary mt-2">This sends a join request to that community admin.</div>
+        <div class="small mt-2">
+            Want to post a help request instead?
+            <a href="{{ url_for('requests.create_request_page') }}">Go to Create Request</a>
+        </div>
     </div>
 </section>
 {% endif %}
