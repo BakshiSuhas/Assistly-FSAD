@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 
 const Login = () => {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('user'); // 'user' or 'admin'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,8 +18,9 @@ const Login = () => {
     setLoading(true);
 
     try {
+      const normalizedEmail = email.trim().toLowerCase();
       const res = await axios.post(`${apiUrl}/auth/login`, {
-        email,
+        email: normalizedEmail,
         password
       });
 
@@ -104,6 +104,11 @@ const Login = () => {
                 {loading ? 'Authenticating...' : `Access ${activeTab === 'user' ? 'Dashboard' : 'Console'}`}
             </button>
             </form>
+            <div className="text-center mb-3">
+              <Link to="/forgot-password" className="text-info text-decoration-none small fw-bold">
+                Forgot password?
+              </Link>
+            </div>
 
             <div className="text-center my-3">
             <span className="text-muted small px-3 bg-dark rounded-pill">OR</span>

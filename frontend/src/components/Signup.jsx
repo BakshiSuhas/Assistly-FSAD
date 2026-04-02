@@ -36,10 +36,11 @@ const Signup = () => {
     setLoading(true);
 
     try {
+      const normalizedEmail = formData.email.trim().toLowerCase();
       if (activeTab === 'user') {
           await axios.post(`${apiUrl}/auth/signup`, {
             name: formData.name,
-            email: formData.email,
+            email: normalizedEmail,
             password: formData.password
           });
           setSuccess("Account created successfully! Redirecting to login...");
@@ -48,7 +49,7 @@ const Signup = () => {
           // Admin signup phase 1
           await axios.post(`${apiUrl}/auth/signup`, { 
               name: formData.name, 
-              email: formData.email, 
+              email: normalizedEmail, 
               password: formData.password, 
               role: 'ADMIN' 
           });

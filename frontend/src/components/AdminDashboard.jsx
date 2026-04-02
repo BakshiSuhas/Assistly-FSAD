@@ -1,16 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const AdminDashboard = () => {
-  const [admin, setAdmin] = useState({ id: null, name: 'Admin', role: 'Admin', token: '' });
+  const [admin] = useState(() => {
+    const storedUser = localStorage.getItem('user');
+    if (!storedUser) {
+      return { id: null, name: 'Admin', role: 'Admin', token: '' };
+    }
+    try {
+      const parsed = JSON.parse(storedUser);
+      return { id: parsed.id, name: parsed.name, role: parsed.role, token: parsed.token };
+    } catch (err) {
+      console.error('Error parsing admin data', err);
+      return { id: null, name: 'Admin', role: 'Admin', token: '' };
+    }
+  });
   const [requests, setRequests] = useState([]);
   const [users, setUsers] = useState([]);
   const [communities, setCommunities] = useState([]);
   
   const [activeTab, setActiveTab] = useState('requests'); // 'requests' | 'users' | 'communities' | 'profile'
-  const [newCommunity, setNewCommunity] = useState({ name: '', description: '' });
 
   // Profile logic
   const [profileData, setProfileData] = useState(null);
@@ -19,26 +30,7 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const apiUrl = 'http://localhost:8080/api';
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        const parsed = JSON.parse(storedUser);
-        if (parsed.role !== 'ROLE_ADMIN' && parsed.role !== 'ADMIN') {
-           navigate('/dashboard/user'); // Boot non-admins logically mapping
-           return;
-        }
-        setAdmin({ id: parsed.id, name: parsed.name, role: parsed.role, token: parsed.token });
-        fetchData(parsed.token);
-      } catch (e) {
-        console.error('Error parsing admin data', e);
-      }
-    } else {
-      navigate('/login');
-    }
-  }, [navigate]);
-
-  const fetchData = async (token) => {
+  const fetchData = useCallback(async (token) => {
     try {
       const [reqRes, usrRes, comRes, profRes] = await Promise.all([
         axios.get(`${apiUrl}/requests`, { headers: { Authorization: `Bearer ${token}` } }),
@@ -54,7 +46,21 @@ const AdminDashboard = () => {
     } catch (err) {
       console.error("Failed to fetch admin data", err);
     }
-  };
+  }, [apiUrl]);
+
+  useEffect(() => {
+    if (!admin.token) {
+      navigate('/login');
+      return;
+    }
+    if (admin.role !== 'ROLE_ADMIN' && admin.role !== 'ADMIN') {
+      navigate('/dashboard/user');
+      return;
+    }
+    queueMicrotask(() => {
+      fetchData(admin.token);
+    });
+  }, [admin, fetchData, navigate]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
@@ -63,9 +69,10 @@ const AdminDashboard = () => {
       const stored = JSON.parse(localStorage.getItem('user'));
       stored.name = profileEdit.name;
       localStorage.setItem('user', JSON.stringify(stored));
-      setAdmin(prev => ({...prev, name: profileEdit.name}));
       alert("Super Admin Identity updated successfully!");
-    } catch(err) {}
+    } catch (err) {
+      console.error('Failed to update admin profile', err);
+    }
   };
 
   const handleCompleteRequest = async (id) => {

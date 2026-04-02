@@ -1,13 +1,12 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
-import { GoogleLogin } from '@react-oauth/google';
-import axios from 'axios';
 import UserDashboard from './components/UserDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import Login from './components/Login';
 import Signup from './components/Signup';
+import ForgotPassword from './components/ForgotPassword';
 
 const Home = () => (
   <div className="container mt-5 pt-5 text-center">
@@ -35,7 +34,11 @@ function App() {
   React.useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-       try { setUser(JSON.parse(storedUser)); } catch (e) {}
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (err) {
+        console.error('Invalid user in localStorage', err);
+      }
     }
   }, []);
 
@@ -73,6 +76,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/admin-signup" element={<Signup />} />
         <Route path="/dashboard/user" element={<UserDashboard />} />

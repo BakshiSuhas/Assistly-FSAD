@@ -17,13 +17,9 @@ const UserDashboard = () => {
 
   // Modal State
   const [showModal, setShowModal] = useState(false);
-  const [editingId, setEditingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({ title: '', description: '', latitude: 40.7128, longitude: -74.0060 });
   const [loading, setLoading] = useState(false);
-  
-  const [profileData, setProfileData] = useState(null);
-  const [profileEdit, setProfileEdit] = useState({ name: '', email: '' });
   
   const apiUrl = 'http://localhost:8080/api';
 
@@ -39,8 +35,9 @@ const UserDashboard = () => {
           token: parsed.token || ''
         });
         fetchCommunities(parsed.token);
-        fetchProfile(parsed.token);
-      } catch (e) {}
+      } catch (err) {
+        console.error('Error parsing user data', err);
+      }
     } else {
       navigate('/login');
     }
@@ -53,7 +50,7 @@ const UserDashboard = () => {
         setSelectedCommunityId(firstJoined.id);
       }
     }
-  }, [communities, user.id]);
+  }, [communities, user.id, selectedCommunityId]);
 
   useEffect(() => {
     if (selectedCommunityId && user.token) {
@@ -75,37 +72,19 @@ const UserDashboard = () => {
     }
   };
 
-  const fetchProfile = async (token) => {
-    try {
-      const res = await axios.get(`${apiUrl}/users/profile`, { headers: { Authorization: `Bearer ${token}` } });
-      setProfileData(res.data);
-      setProfileEdit({ name: res.data.name, email: res.data.email });
-    } catch (err) {}
-  };
-
   const fetchCommunities = async (token) => {
     try {
       const res = await axios.get(`${apiUrl}/communities`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCommunities(res.data);
-    } catch (err) {}
+    } catch (err) {
+      console.error('Failed to fetch communities', err);
+    }
   };
 
   const toggleMode = async () => {
     setIsVolunteerMode(!isVolunteerMode);
-  };
-
-  const handleUpdateProfile = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.put(`${apiUrl}/users/${user.id}`, profileEdit, { headers: { Authorization: `Bearer ${user.token}` } });
-      const stored = JSON.parse(localStorage.getItem('user'));
-      stored.name = profileEdit.name;
-      localStorage.setItem('user', JSON.stringify(stored));
-      setUser(prev => ({...prev, name: profileEdit.name}));
-      alert("Profile updated successfully!");
-    } catch(err) {}
   };
 
   const handleJoinCommunity = async (id) => {
@@ -165,7 +144,7 @@ const UserDashboard = () => {
         setShowModal(false);
         setFormData({ title: '', description: '', latitude: 40.7128, longitude: -74.0060 });
         fetchRequests(user.token, selectedCommunityId);
-    } catch (err) {
+    } catch {
       alert("Error saving strictly-bound request context.");
     } finally {
       setLoading(false);

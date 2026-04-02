@@ -3,6 +3,7 @@ package com.assistly.controller;
 import com.assistly.model.Role;
 import com.assistly.model.User;
 import com.assistly.payload.request.LoginRequest;
+import com.assistly.payload.request.ResetPasswordRequest;
 import com.assistly.payload.request.SignupRequest;
 import com.assistly.payload.response.JwtResponse;
 import com.assistly.payload.response.MessageResponse;
@@ -17,6 +18,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import org.springframework.beans.factory.annotation.Value;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Optional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -49,9 +52,36 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        String normalizedEmail = normalizeEmail(loginRequest.getEmail());
+        if (!userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Account not found. Please sign up first."));
+        }
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(normalizedEmail, loginRequest.getPassword()));
+            return buildJwtResponse(authentication);
+        } catch (AuthenticationException ex) {
+            // Backward-compatible password migration:
+            // allow one-time login for legacy plain-text LOCAL accounts, then store BCrypt hash.
+            Optional<User> legacyUser = userRepository.findByEmailIgnoreCase(normalizedEmail);
+            if (legacyUser.isPresent()) {
+                User user = legacyUser.get();
+                String storedPassword = user.getPassword();
+                boolean isLocalUser = user.getProvider() == null || user.getProvider() == AuthProvider.LOCAL;
+                boolean looksPlainText = storedPassword != null && !storedPassword.startsWith("$2");
+                if (isLocalUser && looksPlainText && storedPassword.equals(loginRequest.getPassword())) {
+                    user.setPassword(encoder.encode(loginRequest.getPassword()));
+                    userRepository.save(user);
+                    Authentication retryAuthentication = authenticationManager.authenticate(
+                            new UsernamePasswordAuthenticationToken(normalizedEmail, loginRequest.getPassword()));
+                    return buildJwtResponse(retryAuthentication);
+                }
+            }
+            throw ex;
+        }
+    }
 
+    private ResponseEntity<?> buildJwtResponse(Authentication authentication) {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
 
@@ -68,7 +98,8 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+        String normalizedEmail = normalizeEmail(signUpRequest.getEmail());
+        if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse("Error: Email is already in use!"));
@@ -78,13 +109,31 @@ public class AuthController {
         Role userRole = (signUpRequest.getRole() != null && signUpRequest.getRole().equalsIgnoreCase("ADMIN")) ? Role.ADMIN : Role.USER;
 
         User user = new User(signUpRequest.getName(),
-                signUpRequest.getEmail(),
+                normalizedEmail,
                 encoder.encode(signUpRequest.getPassword()),
                 userRole);
 
         userRepository.save(user);
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        String normalizedEmail = normalizeEmail(request.getEmail());
+        Optional<User> userOptional = userRepository.findByEmailIgnoreCase(normalizedEmail);
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Account not found for this email."));
+        }
+
+        User user = userOptional.get();
+        if (user.getProvider() == AuthProvider.GOOGLE) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Google account password cannot be reset here."));
+        }
+
+        user.setPassword(encoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+        return ResponseEntity.ok(new MessageResponse("Password reset successful. Please login."));
     }
 
     @PostMapping("/google")
@@ -97,10 +146,10 @@ public class AuthController {
             GoogleIdToken idToken = verifier.verify(loginRequest.getTokenId());
             if (idToken != null) {
                 GoogleIdToken.Payload payload = idToken.getPayload();
-                String email = payload.getEmail();
+                String email = normalizeEmail(payload.getEmail());
                 String name = (String) payload.get("name");
 
-                Optional<User> userOptional = userRepository.findByEmail(email);
+                Optional<User> userOptional = userRepository.findByEmailIgnoreCase(email);
                 User user;
                 if (userOptional.isPresent()) {
                     user = userOptional.get();
@@ -132,5 +181,9 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Authentication failed: " + e.getMessage()));
         }
+    }
+
+    private String normalizeEmail(String email) {
+        return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
     }
 }
