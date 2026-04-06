@@ -156,11 +156,14 @@ npm install
 npm start
 ________________________________________
  Environment Variables
+Copy [.env.example](.env.example) to [.env](.env) and replace the placeholder values before running the backend.
+Copy [frontend/.env.example](frontend/.env.example) to [frontend/.env](frontend/.env) and set your Google OAuth client ID for the frontend.
+
 SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/assistly_db
 SPRING_DATASOURCE_USERNAME=root
-SPRING_DATASOURCE_PASSWORD=yourpassword
+SPRING_DATASOURCE_PASSWORD=your_mysql_password
 
-JWT_SECRET=your_secret_key
+JWT_SECRET=your_jwt_secret
 ________________________________________
 Integration Setup (SMTP + Google + Leaflet + Chatbot)
 
