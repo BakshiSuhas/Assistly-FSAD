@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
@@ -70,56 +70,58 @@ const Login = () => {
 
   return (
     <div className="container mt-5 pt-5 d-flex justify-content-center">
-      <div className="glass-card w-100 p-0 overflow-hidden" style={{maxWidth: '450px'}}>
+      <div className="premium-glass w-100 p-0 overflow-hidden animate-in" style={{maxWidth: '450px'}}>
         
         {/* Tab Header for strict Role Segregation */}
-        <div className="d-flex border-bottom border-secondary bg-dark text-center">
-             <div onClick={() => {setActiveTab('user'); setError('');}} className={`flex-grow-1 p-3 cursor-pointer ${activeTab==='user'?'bg-primary text-white':'text-secondary'}`} style={{cursor: 'pointer', fontWeight: 'bold'}}>
-                 Resident/Volunteer
+        <div className="d-flex text-center" style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--glass-border)' }}>
+             <div onClick={() => {setActiveTab('user'); setError('');}} className={`flex-grow-1 p-4 cursor-pointer transition-all ${activeTab==='user'?'text-primary border-bottom border-primary':'text-muted opacity-50'}`} style={{cursor: 'pointer', fontWeight: 'bold', letterSpacing: '1px', fontSize: '0.8rem', textTransform: 'uppercase'}}>
+                 Resident Portal
              </div>
-             <div onClick={() => {setActiveTab('admin'); setError('');}} className={`flex-grow-1 p-3 cursor-pointer ${activeTab==='admin'?'bg-danger text-white':'text-secondary'}`} style={{cursor: 'pointer', fontWeight: 'bold'}}>
-                 Platform Admin
+             <div onClick={() => {setActiveTab('admin'); setError('');}} className={`flex-grow-1 p-4 cursor-pointer transition-all ${activeTab==='admin'?'text-danger border-bottom border-danger':'text-muted opacity-50'}`} style={{cursor: 'pointer', fontWeight: 'bold', letterSpacing: '1px', fontSize: '0.8rem', textTransform: 'uppercase'}}>
+                 Admin Console
              </div>
         </div>
 
-        <div className="p-4">
-            <div className="text-center mb-4 mt-2">
-            <h2 className="text-gradient mb-2">{activeTab === 'user' ? 'Resident Portal' : 'Admin Operations'}</h2>
-            <p className="text-light" style={{opacity: 0.8}}>Securely enter your credentials.</p>
+        <div className="p-5">
+            <div className="text-center mb-5">
+              <h2 className="accent-gradient mb-3" style={{ fontSize: '2rem' }}>{activeTab === 'user' ? 'Welcome Back' : 'Security Terminal'}</h2>
+              <p className="text-muted small">Please verify your credentials to access the community.</p>
             </div>
 
-            {error && <div className="alert alert-danger py-2 text-center small fw-bold">{error}</div>}
+            {error && <div className="alert bg-danger bg-opacity-10 text-danger border-danger border-opacity-25 py-3 text-center small fw-bold mb-4">{error}</div>}
 
             <form onSubmit={handleStandardLogin}>
-            <div className="mb-3">
-                <label className="form-label text-light small text-uppercase tracking-wide">Email Address</label>
-                <input type="email" className="form-control bg-dark text-light border-secondary" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <div className="mb-4">
+                <label className="form-label text-muted small text-uppercase tracking-wider fw-bold mb-2">Email Identity</label>
+                <input type="email" className="class-input" placeholder="id@community.net" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
             <div className="mb-4">
-                <label className="form-label text-light small text-uppercase tracking-wide">Password</label>
-                <input type="password" className="form-control bg-dark text-light border-secondary" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <label className="form-label text-muted small text-uppercase tracking-wider fw-bold mb-2">Security Key</label>
+                <input type="password" className="class-input" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
             
-            <button type="submit" className={`neon-button w-100 mb-3 ${activeTab === 'admin' ? 'neo-danger' : ''}`} disabled={loading} style={activeTab === 'admin' ? {backgroundColor: '#dc3545', boxShadow: 'none'} : {}}>
-                {loading ? 'Authenticating...' : `Access ${activeTab === 'user' ? 'Dashboard' : 'Console'}`}
+            <button type="submit" className={`class-btn w-100 py-3 mb-3 ${activeTab === 'admin' ? 'bg-danger shadow-none' : ''}`} disabled={loading}>
+                {loading ? 'Verifying...' : `Continue to ${activeTab === 'user' ? 'Dashboard' : 'Terminal'}`}
             </button>
             </form>
-            <div className="text-center mb-3">
-              <Link to="/forgot-password" className="text-info text-decoration-none small fw-bold">
-                Forgot password?
+            <div className="text-center mb-4">
+              <Link to="/forgot-password" className="text-primary text-decoration-none small fw-bold opacity-75 hover-opacity-100 transition-all">
+                Reset Access Credentials?
               </Link>
             </div>
 
-            <div className="text-center my-3">
-            <span className="text-muted small px-3 bg-dark rounded-pill">OR</span>
+            <div className="d-flex align-items-center my-4">
+              <hr className="flex-grow-1 border-secondary opacity-25" />
+              <span className="text-muted small px-3 text-uppercase tracking-widest opacity-50" style={{ fontSize: '0.6rem' }}>External Auth</span>
+              <hr className="flex-grow-1 border-secondary opacity-25" />
             </div>
 
             <div className="google-login-wrapper mt-0 pt-0 border-0">
-            <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => setError('Google Log error')} theme="filled_black" size="large" width="100%" />
+            <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => setError('Google Auth Failure')} theme="filled_black" size="large" width="100%" shape="pill" />
             </div>
 
-            <p className="text-center text-light mt-4 mb-0 small" style={{opacity: 0.8}}>
-            Don't have an account? <Link to="/signup" className="text-info text-decoration-none fw-bold">Sign Up Here</Link>
+            <p className="text-center text-muted mt-5 mb-0 small">
+            New operative? <Link to="/signup" className="text-primary text-decoration-none fw-bold">Register Profile</Link>
             </p>
         </div>
       </div>

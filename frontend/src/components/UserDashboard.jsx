@@ -68,7 +68,7 @@ const UserDashboard = () => {
         sameId(c.admin?.id, user.id)
       );
       if (joinedComm) {
-        console.log("SYNC: Auto-transitioning to Syndicate Context:", joinedComm.name);
+        console.log("SYNC: Auto-transitioning to Community Context:", joinedComm.name);
         setSelectedCommunityId(joinedComm.id);
       }
     }
@@ -87,18 +87,18 @@ const UserDashboard = () => {
   useEffect(() => {
     if (selectedCommunityId && user.token) {
       fetchRequests(user.token, selectedCommunityId);
-      fetchSyndicatePulse(user.token, selectedCommunityId);
+      fetchCommunityPulse(user.token, selectedCommunityId);
     }
   }, [selectedCommunityId, user.token]);
 
-  const fetchSyndicatePulse = async (token, commId) => {
+  const fetchCommunityPulse = async (token, commId) => {
     try {
       const res = await axios.get(`${apiUrl}/content/pulse/${commId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPulse(res.data);
     } catch (err) {
-      console.error("Failed to fetch syndicate pulse", err);
+      console.error("Failed to fetch community pulse", err);
     }
   };
 
@@ -242,31 +242,33 @@ const UserDashboard = () => {
   });
 
   return (
-    <div className="container mt-4 pt-4 mb-5">
-      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div className="container mt-4 pt-4 mb-5 animate-in">
+      <div className="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-4 px-2">
         <div>
-          <h2 className="text-gradient">Welcome, {user.name}</h2>
+          <h2 className="accent-gradient fw-bold mb-1" style={{ fontSize: '2.5rem' }}>Welcome, {user.name}</h2>
+          <p className="text-muted small text-uppercase tracking-widest">Protocol Status: Secure / Neural Link Active</p>
         </div>
-        <div className="d-flex gap-3 align-items-center">
-          <div className="form-check form-switch ps-0 d-flex align-items-center gap-2">
-            <span className={`small fw-bold ${!isVolunteerMode ? 'text-gradient' : 'text-muted'}`}>RESIDENT</span>
-            <input className="form-check-input ms-0 mt-0" type="checkbox" role="switch" checked={isVolunteerMode} onChange={toggleMode} style={{width: '3em', height: '1.5em', cursor: 'pointer'}} />
-            <span className={`small fw-bold ${isVolunteerMode ? 'text-info' : 'text-muted'}`}>VOLUNTEER</span>
+        <div className="d-flex gap-4 align-items-center">
+          <div className="form-check form-switch ps-0 d-flex align-items-center gap-3 bg-dark bg-opacity-50 px-4 py-2 rounded-pill border border-secondary border-opacity-25">
+            <span className={`small fw-bold tracking-wider ${!isVolunteerMode ? 'text-primary' : 'text-muted opacity-50'}`}>RESIDENT</span>
+            <input className="form-check-input ms-0 mt-0" type="checkbox" role="switch" checked={isVolunteerMode} onChange={toggleMode} style={{width: '2.8rem', height: '1.4rem', cursor: 'pointer', backgroundColor: 'var(--bg-dark-700)', borderColor: 'var(--glass-border)'}} />
+            <span className={`small fw-bold tracking-wider ${isVolunteerMode ? 'text-secondary' : 'text-muted opacity-50'}`}>VOLUNTEER</span>
           </div>
-          <button onClick={handleLogout} className="neon-button-secondary py-1 px-3">Logout</button>
+          <button onClick={handleLogout} className="class-btn class-btn-secondary py-2 px-4 shadow-none small fw-bold">Terminate Session</button>
         </div>
       </div>
 
-      <div className="row g-4">
+      <div className="row g-5">
         {/* Sidebar */}
         <div className="col-lg-3">
-          <div className="glass-card h-100 d-flex flex-column align-items-center py-4">
-            <div className="rounded-circle bg-primary bg-opacity-25 mb-3 d-flex align-items-center justify-content-center text-primary" style={{ width: '80px', height: '80px', fontSize: '1.8rem', border: '2px solid rgba(59, 130, 246, 0.3)' }}>
+          <div className="premium-glass h-100 d-flex flex-column align-items-center py-5 px-3">
+            <div className="rounded-circle bg-primary bg-opacity-10 mb-4 d-flex align-items-center justify-content-center text-primary shadow-lg" style={{ width: '100px', height: '100px', fontSize: '2.5rem', border: '2px solid var(--primary-glow)' }}>
               {user.name.charAt(0).toUpperCase()}
             </div>
-            <h5 className="fw-bold text-center">{user.name}</h5>
-            <span className="badge bg-primary bg-opacity-25 text-primary border border-primary rounded-pill px-3 py-1 mb-4">{user.role}</span>
-            <div className="d-flex flex-column gap-2 w-100 px-2 mt-auto">
+            <h5 className="fw-bold text-center mb-1">{user.name}</h5>
+            <span className="class-badge badge-open mb-5" style={{ fontSize: '0.65rem' }}>{user.role}</span>
+            
+            <div className="d-flex flex-column gap-2 w-100 mt-2">
               <button 
                 onClick={() => { 
                   if (!selectedCommunityId) {
@@ -276,25 +278,33 @@ const UserDashboard = () => {
                       setShowModal(true);
                     } else {
                       setActiveTab('communities');
-                      alert("Intelligence Protocol: Join a Syndicate Network (Community) first to broadcast requests.");
+                      alert("Community Protocol: Join a Network first to broadcast missions.");
                     }
                   } else {
                     setShowModal(true); 
                   }
                 }} 
-                className="btn btn-outline-light rounded-pill w-100"
+                className="class-btn w-100 justify-content-center mb-4 py-3"
               >
-                <i className="bi bi-plus-circle me-2"></i> New Request
+                <i className="bi bi-plus-circle-fill"></i> New Directive
               </button>
-              <button onClick={() => setActiveTab('dashboard')} className={`btn rounded-pill w-100 mt-3 ${activeTab === 'dashboard' ? 'btn-primary shadow-sm' : 'btn-outline-secondary border-0'}`}>
-                <i className="bi bi-grid-1x2-fill me-2"></i> Workspace
+              
+              <button onClick={() => setActiveTab('dashboard')} className={`sidebar-link w-100 border-0 ${activeTab === 'dashboard' ? 'active' : ''}`}>
+                <i className="bi bi-grid-1x2-fill"></i> Operational Workspace
               </button>
-              <button onClick={() => setActiveTab('communities')} className={`btn rounded-pill w-100 ${activeTab === 'communities' ? 'btn-primary shadow-sm' : 'btn-outline-secondary border-0'}`}>
-                <i className="bi bi-people-fill me-2"></i> Syndicate Network
+              <button onClick={() => setActiveTab('communities')} className={`sidebar-link w-100 border-0 ${activeTab === 'communities' ? 'active' : ''}`}>
+                <i className="bi bi-people-fill"></i> Community Networks
               </button>
-              <button onClick={() => setActiveTab('profile')} className={`btn rounded-pill w-100 ${activeTab === 'profile' ? 'btn-primary shadow-sm' : 'btn-outline-secondary border-0'}`}>
-                <i className="bi bi-person-circle me-2"></i> Profile Hub
+              <button onClick={() => setActiveTab('profile')} className={`sidebar-link w-100 border-0 ${activeTab === 'profile' ? 'active' : ''}`}>
+                <i className="bi bi-person-circle"></i> Neural Profile
               </button>
+            </div>
+
+            <div className="mt-auto pt-5 w-100 px-3">
+               <div className="p-3 rounded-4 bg-primary bg-opacity-5 border border-primary border-opacity-10 text-center">
+                  <div className="text-muted small mb-1" style={{ fontSize: '0.6rem', letterSpacing: '1px' }}>SYSTEM VERSION</div>
+                  <div className="mono text-primary small fw-bold">v2.4.0-STABLE</div>
+               </div>
             </div>
           </div>
         </div>
@@ -302,11 +312,14 @@ const UserDashboard = () => {
         {/* Main Content */}
         <div className="col-lg-9">
           {activeTab === 'dashboard' ? (
-            <div className="glass-card h-100">
-              <div className="d-flex justify-content-between mb-4 align-items-center">
-                  <h4 className="mb-0">{isVolunteerMode ? 'Global Assignments' : 'My Requests'}</h4>
+            <div className="premium-glass h-100 p-5">
+              <div className="d-flex justify-content-between mb-5 align-items-center">
+                  <div>
+                    <h4 className="fw-bold mb-1" style={{ fontSize: '1.5rem' }}>{isVolunteerMode ? 'Global Assignments' : 'My Deployment Log'}</h4>
+                    <p className="text-muted small">Real-time tactical overview of community needs.</p>
+                  </div>
                   <div className="d-flex gap-3 align-items-center w-50 justify-content-end">
-                    <select className="form-select bg-dark text-light border-secondary" value={selectedCommunityId || ''} onChange={(e) => setSelectedCommunityId(Number(e.target.value))}>
+                    <select className="class-input py-2" style={{ maxWidth: '250px' }} value={selectedCommunityId || ''} onChange={(e) => setSelectedCommunityId(Number(e.target.value))}>
                         <option value="" disabled>Select Workspace...</option>
                           {userJoinedCommunities.map(c => (
                             <option key={c.id} value={c.id}>{c.name}</option>
@@ -316,42 +329,41 @@ const UserDashboard = () => {
               </div>
 
               {!selectedCommunityId && userJoinedCommunities.length === 0 && (
-                <div className="text-center p-5">
-                   <div className="mb-4">
-                      <i className="bi bi-geo-alt-fill text-gradient" style={{fontSize: '4rem'}}></i>
+                <div className="text-center py-5">
+                   <div className="mb-5">
+                      <i className="bi bi-geo-alt-fill accent-gradient" style={{fontSize: '5rem', filter: 'drop-shadow(0 0 20px var(--primary-glow))'}}></i>
                    </div>
-                   <h2 className="fw-bold mb-3">Welcome to your Operations Center, {user.name}</h2>
-                   <p className="text-muted lead mb-5 mx-auto" style={{maxWidth: '600px'}}>
-                      Your tactical dashboard is currently inactive because you haven't joined a Syndicate Network yet. 
-                      Connect with a community to begin broadcasting missions or volunteering for active assignments.
+                   <h2 className="fw-bold mb-4" style={{ fontSize: '2rem' }}>Operations Center Inactive</h2>
+                   <p className="text-muted lead mb-5 mx-auto opacity-75" style={{maxWidth: '600px', fontSize: '1.1rem'}}>
+                      Your tactical status is currently offline. To begin broadcasting missions or volunteering for active assignments, you must first connect with a Community Network.
                    </p>
                    <button 
                      onClick={() => setActiveTab('communities')} 
-                     className="neon-button px-5"
+                     className="class-btn px-5 py-3"
                    >
-                     Discover Syndicate Networks
+                     Initialize Network Link
                    </button>
                 </div>
               )}
 
               {selectedCommunityId && (
-                <div className="row g-3 mb-4">
+                <div className="row g-4 mb-5">
                   <div className="col-md-4">
-                    <div className="p-3 bg-dark bg-opacity-25 border border-secondary rounded-4 text-center stat-card">
-                      <div className="small text-muted mb-1">Active Missions</div>
-                      <div className="h3 fw-bold text-info mb-0">{requests.filter(r => r.status === 'IN_PROGRESS' || r.status === 'OPEN').length}</div>
+                    <div className="p-4 premium-glass border-0 bg-opacity-10 text-center" style={{ background: 'rgba(99, 102, 241, 0.05)', border: '1px solid rgba(99, 102, 241, 0.1)' }}>
+                      <div className="small text-muted mb-2 text-uppercase tracking-widest fw-bold" style={{ fontSize: '0.6rem' }}>Active Missions</div>
+                      <div className="h2 fw-bold text-primary mb-0 mono">{requests.filter(r => r.status === 'IN_PROGRESS' || r.status === 'OPEN').length}</div>
                     </div>
                   </div>
                   <div className="col-md-4">
-                    <div className="p-3 bg-dark bg-opacity-25 border border-secondary rounded-4 text-center stat-card">
-                      <div className="small text-muted mb-1">Pending Verification</div>
-                      <div className="h3 fw-bold text-warning mb-0">{requests.filter(r => r.status === 'PENDING_VERIFICATION').length}</div>
+                    <div className="p-4 premium-glass border-0 bg-opacity-10 text-center" style={{ background: 'rgba(245, 158, 11, 0.05)', border: '1px solid rgba(245, 158, 11, 0.1)' }}>
+                      <div className="small text-muted mb-2 text-uppercase tracking-widest fw-bold" style={{ fontSize: '0.6rem' }}>Validation Queue</div>
+                      <div className="h2 fw-bold text-accent mb-0 mono">{requests.filter(r => r.status === 'PENDING_VERIFICATION').length}</div>
                     </div>
                   </div>
                   <div className="col-md-4">
-                    <div className="p-3 bg-dark bg-opacity-25 border border-secondary rounded-4 text-center stat-card">
-                      <div className="small text-muted mb-1">Missions Completed</div>
-                      <div className="h3 fw-bold text-success mb-0">{requests.filter(r => r.status === 'COMPLETED').length}</div>
+                    <div className="p-4 premium-glass border-0 bg-opacity-10 text-center" style={{ background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.1)' }}>
+                      <div className="small text-muted mb-2 text-uppercase tracking-widest fw-bold" style={{ fontSize: '0.6rem' }}>Success Rate</div>
+                      <div className="h2 fw-bold text-secondary mb-0 mono">{requests.filter(r => r.status === 'COMPLETED').length}</div>
                     </div>
                   </div>
                 </div>
@@ -359,31 +371,31 @@ const UserDashboard = () => {
 
               {selectedCommunityId ? (
                 <>
-                  <div className="row g-4 mb-5">
+                  <div className="row g-5 mb-5">
                     {/* Community Pulse Widget */}
                     <div className="col-lg-8">
-                       <div className="p-4 rounded-4 bg-dark bg-opacity-50 border border-secondary h-100">
-                          <h5 className="text-info mb-4 d-flex align-items-center">
-                            <i className="bi bi-activity me-2"></i> Syndicate Pulse
+                       <div className="p-5 rounded-4 premium-glass h-100" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 100%)' }}>
+                          <h5 className="text-primary mb-5 d-flex align-items-center fw-bold text-uppercase tracking-widest" style={{ fontSize: '0.85rem' }}>
+                            <i className="bi bi-activity me-3 fs-4"></i> Community Pulse
                           </h5>
-                          <div className="row g-3">
-                             <div className="col-md-6 border-end border-secondary border-opacity-25">
-                                <h6 className="small text-muted mb-3 text-uppercase tracking-wider">Gatherings</h6>
+                          <div className="row g-5">
+                             <div className="col-md-6 border-end border-white border-opacity-5">
+                                <h6 className="small text-muted mb-4 text-uppercase tracking-widest fw-bold" style={{ fontSize: '0.65rem' }}>Operational Gatherings</h6>
                                 {pulse.events.length > 0 ? pulse.events.map(ev => (
-                                  <div key={ev.id} className="mb-3 p-2 rounded hover-bg-light">
-                                    <div className="fw-bold small">{ev.title}</div>
-                                    <div className="text-muted tiny-text"><i className="bi bi-calendar-event me-1"></i> {new Date(ev.startTime).toLocaleDateString()}</div>
+                                  <div key={ev.id} className="mb-4 p-3 rounded-4 transition-all" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                                    <div className="fw-bold small mb-1">{ev.title}</div>
+                                    <div className="text-muted" style={{ fontSize: '0.7rem' }}><i className="bi bi-calendar-event me-2 text-primary"></i> {new Date(ev.startTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</div>
                                   </div>
-                                )) : <div className="small text-muted fst-italic">No gatherings scheduled.</div>}
+                                )) : <div className="small text-muted fst-italic opacity-50">No active gatherings detected.</div>}
                              </div>
                              <div className="col-md-6">
-                                <h6 className="small text-muted mb-3 text-uppercase tracking-wider">Sync-ups</h6>
+                                <h6 className="small text-muted mb-4 text-uppercase tracking-widest fw-bold" style={{ fontSize: '0.65rem' }}>Tactical Sync-ups</h6>
                                 {pulse.meetings.length > 0 ? pulse.meetings.map(mt => (
-                                  <div key={mt.id} className="mb-3 p-2 rounded hover-bg-light">
-                                    <div className="fw-bold small">{mt.title}</div>
-                                    <a href={mt.link} target="_blank" rel="noreferrer" className="text-info tiny-text text-decoration-none"><i className="bi bi-link-45deg me-1"></i> JOIN BROADCAST</a>
+                                  <div key={mt.id} className="mb-4 p-3 rounded-4 transition-all" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                                    <div className="fw-bold small mb-2">{mt.title}</div>
+                                    <a href={mt.link} target="_blank" rel="noreferrer" className="class-btn btn-sm py-1 px-3" style={{ fontSize: '0.65rem' }}><i className="bi bi-link-45deg me-1"></i> JOIN LINK</a>
                                   </div>
-                                )) : <div className="small text-muted fst-italic">No meetings scheduled.</div>}
+                                )) : <div className="small text-muted fst-italic opacity-50">No secure syncs scheduled.</div>}
                              </div>
                           </div>
                        </div>
@@ -391,98 +403,112 @@ const UserDashboard = () => {
 
                     {/* Governance Widget */}
                     <div className="col-lg-4">
-                       <div className="p-4 rounded-4 bg-dark bg-opacity-50 border border-secondary h-100">
-                          <h5 className="text-warning mb-4 d-flex align-items-center">
-                            <i className="bi bi-shield-check me-2"></i> Governance
+                       <div className="p-5 rounded-4 premium-glass h-100" style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(255,255,255,0) 100%)' }}>
+                          <h5 className="text-accent mb-5 d-flex align-items-center fw-bold text-uppercase tracking-widest" style={{ fontSize: '0.85rem' }}>
+                            <i className="bi bi-shield-check me-3 fs-4"></i> Protocols
                           </h5>
                           <ul className="list-unstyled mb-0">
                              {pulse.rules.length > 0 ? pulse.rules.map(rule => (
-                               <li key={rule.id} className="small mb-3 d-flex gap-2">
-                                  <i className="bi bi-caret-right-fill text-warning mt-1"></i>
-                                  <span>{rule.description}</span>
+                               <li key={rule.id} className="small mb-4 d-flex gap-3 align-items-start">
+                                  <i className="bi bi-check2-circle text-accent mt-1"></i>
+                                  <span className="opacity-75">{rule.description}</span>
                                </li>
-                             )) : <li className="small text-muted fst-italic">Rules pending synchronization.</li>}
+                             )) : <li className="small text-muted fst-italic opacity-50">Protocols pending update.</li>}
                           </ul>
                        </div>
                     </div>
                   </div>
 
-                  <h5 className="text-muted mb-4 text-uppercase small tracking-widest fw-bold">Tactical Broadcasts</h5>
-                  <div className="table-responsive mb-4" style={{maxHeight: '300px'}}>
-                    <table className="table table-borderless text-light align-middle custom-glass-table">
-                      <thead className="position-sticky top-0 bg-dark" style={{zIndex: 1}}>
-                        <tr className="text-muted border-bottom border-light border-opacity-10">
-                          <th scope="col" className="pb-3 fw-medium">Mission Title</th>
-                          <th scope="col" className="pb-3 fw-medium text-center">State Status</th>
-                          <th scope="col" className="pb-3 fw-medium text-end">Action Interface</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {displayedRequests.length > 0 ? displayedRequests.map(req => (
-                          <tr key={req.id} className="border-bottom border-light border-opacity-10">
-                            <td className="py-3">
-                              <div className="fw-bold">{req.title}</div>
-                              <div className="small text-muted text-truncate" style={{maxWidth: '250px'}}>{req.description}</div>
-                            </td>
-                            <td className="py-3 text-center">
-                              <span className={`badge rounded-pill px-3 py-2 ${req.status === 'COMPLETED' ? 'bg-success bg-opacity-25 text-success border border-success' : req.status === 'IN_PROGRESS' ? 'bg-info bg-opacity-25 text-info border border-info' : req.status === 'PENDING_VERIFICATION' ? 'bg-warning bg-opacity-25 text-warning border border-warning' : 'bg-primary bg-opacity-25 text-primary border border-primary'}`}>
-                                {req.status}
-                              </span>
-                            </td>
-                            <td className="py-3 text-end">
-                              {isVolunteerMode ? (
-                                <>
-                                  {req.status === 'OPEN' && (
-                                    <button onClick={() => handleVerifyAction(req.id, 'accept')} className="btn btn-sm btn-outline-info rounded-pill px-3">Enlist Volunteer</button>
-                                  )}
-                                  {req.status === 'IN_PROGRESS' && req.volunteer?.id === user.id && (
-                                    <button onClick={() => handleVerifyAction(req.id, 'submit')} className="btn btn-sm btn-info rounded-pill px-3 text-dark fw-bold">Submit Validation</button>
-                                  )}
-                                </>
-                              ) : (
-                                <>
-                                  {req.status === 'PENDING_VERIFICATION' && (
-                                    <>
-                                      <button onClick={() => handleVerifyAction(req.id, 'complete')} className="btn btn-sm btn-success rounded-pill px-3 me-2">Verify</button>
-                                      <button onClick={() => handleVerifyAction(req.id, 'reject')} className="btn btn-sm btn-danger rounded-pill px-3">Intercept</button>
-                                    </>
-                                  )}
-                                </>
-                              )}
-                            </td>
+                  <div className="d-flex justify-content-between align-items-center mb-4 mt-5">
+                    <h5 className="text-muted text-uppercase small tracking-widest fw-bold mb-0">Tactical Deployments</h5>
+                    <div className="bg-white bg-opacity-5 px-3 py-1 rounded-pill small mono text-muted" style={{ fontSize: '0.65rem' }}>{displayedRequests.length} OPERATIONS DETECTED</div>
+                  </div>
+                  
+                  <div className="premium-glass p-0 overflow-hidden mb-5">
+                    <div className="table-responsive" style={{maxHeight: '400px'}}>
+                      <table className="class-table mb-0">
+                        <thead>
+                          <tr>
+                            <th scope="col">Mission Profile</th>
+                            <th scope="col" className="text-center">State Status</th>
+                            <th scope="col" className="text-end">Command Interface</th>
                           </tr>
-                        )) : (
-                          <tr><td colSpan="3" className="text-center py-4 text-muted">No secure assignments in this block.</td></tr>
-                        )}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {displayedRequests.length > 0 ? displayedRequests.map(req => (
+                            <tr key={req.id}>
+                              <td className="py-4">
+                                <div className="fw-bold mb-1 opacity-90">{req.title}</div>
+                                <div className="small text-muted text-truncate" style={{maxWidth: '300px'}}>{req.description}</div>
+                              </td>
+                              <td className="py-4 text-center">
+                                <span className={`class-badge ${req.status === 'COMPLETED' ? 'badge-done' : req.status === 'OPEN' ? 'badge-open' : 'badge-progress'}`}>
+                                  {req.status.replace('_', ' ')}
+                                </span>
+                              </td>
+                              <td className="py-4 text-end">
+                                {isVolunteerMode ? (
+                                  <>
+                                    {req.status === 'OPEN' && (
+                                      <button onClick={() => handleVerifyAction(req.id, 'accept')} className="class-btn btn-sm py-1 px-3" style={{ fontSize: '0.7rem' }}>Enlist Profile</button>
+                                    )}
+                                    {req.status === 'IN_PROGRESS' && req.volunteer?.id === user.id && (
+                                      <button onClick={() => handleVerifyAction(req.id, 'submit')} className="class-btn btn-sm py-1 px-3 bg-secondary border-0 text-white" style={{ fontSize: '0.7rem' }}>Submit Data</button>
+                                    )}
+                                  </>
+                                ) : (
+                                  <>
+                                    {req.status === 'PENDING_VERIFICATION' && (
+                                      <div className="d-flex gap-2 justify-content-end">
+                                         <button onClick={() => handleVerifyAction(req.id, 'complete')} className="class-btn btn-sm py-2 px-3 bg-secondary border-0 text-white" style={{ fontSize: '0.7rem' }}>
+                                           <i className="bi bi-check2 me-1"></i> Approve
+                                         </button>
+                                         <button onClick={() => handleVerifyAction(req.id, 'reject')} className="class-btn btn-sm py-2 px-3 bg-danger border-0 text-white" style={{ fontSize: '0.7rem' }}>
+                                           <i className="bi bi-x-lg me-1"></i> Reject
+                                         </button>
+                                      </div>
+                                    )}
+                                  </>
+                                )}
+                              </td>
+                            </tr>
+                          )) : (
+                            <tr><td colSpan="3" className="text-center py-5 text-muted opacity-50">No tactical data found in this jurisdiction.</td></tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
 
-                  <h5 className="mb-3 border-top border-secondary pt-4">Workspace Area Map</h5>
-                  <div className="w-100 rounded bg-dark border border-light border-opacity-10">
+                  <h5 className="mb-4 text-muted text-uppercase small tracking-widest fw-bold mt-5">Intelligence Overlay (Mapping)</h5>
+                  <div className="w-100 rounded-4 overflow-hidden border border-white border-opacity-5 shadow-lg">
                     <RequestMap requests={displayedRequests} currentUserId={user.id} />
                   </div>
                 </>
               ) : (
-                  <div className="text-center py-5 text-muted">Join or select a community from Community Network to enable New Request.</div>
+                  <div className="text-center py-5 premium-glass bg-opacity-5 mt-5">
+                    <i className="bi bi-hdd-network mb-4 d-block fs-1 opacity-25"></i>
+                    <p className="text-muted">Intelligence protocol inactive. Link with a community network first.</p>
+                  </div>
               )}
             </div>
           ) : activeTab === 'communities' ? (
-            <div className="glass-card h-100">
-              <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div className="premium-glass h-100 p-5 shadow-lg">
+              <div className="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-3">
                  <div>
-                   <h4 className="mb-0">Global Syndicate Architecture</h4>
+                   <h4 className="fw-bold mb-1" style={{ fontSize: '1.5rem' }}>Global Community Architecture</h4>
+                   <p className="text-muted small">Connect with active networks to expand your reach.</p>
                  </div>
-                 <div className="d-flex gap-2">
-                   <button onClick={() => setShowCreateCommModal(true)} className="btn btn-sm btn-info rounded-pill px-3 fw-bold text-dark">
-                      <i className="bi bi-plus-lg me-1"></i> New
-                   </button>
-                   <div style={{width: '180px'}}>
-                     <input type="text" className="form-control form-control-sm bg-dark text-light border-secondary rounded-pill" placeholder="Scan matrices..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
-                   </div>
+                 <div className="d-flex gap-3">
+                    <button onClick={() => setShowCreateCommModal(true)} className="class-btn btn-sm py-2 px-4 shadow-none small fw-bold">
+                       <i className="bi bi-plus-lg me-1"></i> New Precinct
+                    </button>
+                    <div style={{width: '200px'}}>
+                      <input type="text" className="class-input py-2" placeholder="Scan matrices..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                    </div>
                  </div>
               </div>
-              <div className="row g-3">
+              <div className="row g-4">
                 {communities.map(comm => {
                    const isMember = comm.members?.some(m => sameId(m.id, user.id));
                    const isPending = comm.pendingMembers?.some(m => sameId(m.id, user.id));
@@ -490,24 +516,25 @@ const UserDashboard = () => {
 
                    return (
                      <div key={comm.id} className="col-md-6">
-                       <div className="p-3 border border-secondary rounded-4 bg-dark bg-opacity-50 h-100 d-flex flex-column community-card">
-                         <div className="d-flex justify-content-between align-items-center mb-2">
+                       <div className="p-4 premium-glass border-0 bg-opacity-5 h-100 d-flex flex-column transition-all hover-glow" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                         <div className="d-flex justify-content-between align-items-start mb-3">
+                             <h6 className="fw-bold mb-0 opacity-90">{comm.name}</h6>
                              <div className="d-flex gap-1">
-                                {comm.isPrivate && <span className="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 tiny-badge">PRIVATE</span>}
-                                {(isMember || isAdmin) && <span className="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 tiny-badge">JOINED</span>}
+                                {comm.isPrivate && <span className="class-badge badge-progress px-2" style={{ fontSize: '0.55rem' }}>PRIVATE</span>}
+                                {(isMember || isAdmin) && <span className="class-badge badge-done px-2" style={{ fontSize: '0.55rem' }}>CONNECTED</span>}
                              </div>
                          </div>
-                         <p className="small text-muted flex-grow-1 mb-3">{comm.description}</p>
-                         <div className="d-flex justify-content-between align-items-center mt-auto pt-2 border-top border-secondary border-opacity-25">
-                           <span className="small text-muted">{comm.members?.length || 0} Operators</span>
+                         <p className="small text-muted flex-grow-1 mb-4 opacity-75" style={{ lineHeight: '1.6' }}>{comm.description}</p>
+                         <div className="d-flex justify-content-between align-items-center mt-auto pt-3 border-top border-white border-opacity-5">
+                           <span className="small text-muted mono" style={{ fontSize: '0.65rem' }}>{comm.members?.length || 0} OPERATIVES</span>
                            <div className="d-flex gap-2">
                                {isAdmin ? (
-                                   <button onClick={() => { setActiveAdminComm(comm); setActiveTab('admin_manage'); }} className="btn btn-sm btn-link text-warning p-0 text-decoration-none small fw-bold">ADMIN CONSOLE</button>
+                                   <button onClick={() => { setActiveAdminComm(comm); setActiveTab('admin_manage'); }} className="btn btn-sm text-accent p-0 text-decoration-none small fw-bold tracking-widest" style={{ fontSize: '0.6rem' }}>ADMIN TERMINAL</button>
                                ) : isPending ? (
-                                   <span className="small text-warning fst-italic">PENDING...</span>
+                                   <span className="small text-accent fst-italic mono" style={{ fontSize: '0.6rem' }}>LINKING...</span>
                                ) : (
-                                   <button onClick={() => handleJoinCommunity(comm.id)} disabled={isMember} className={`btn btn-sm p-0 px-2 small fw-bold ${isMember ? 'text-muted disabled' : 'text-info'}`}>
-                                     {isMember ? 'MEMBER' : 'JOIN'}
+                                   <button onClick={() => handleJoinCommunity(comm.id)} disabled={isMember} className={`class-btn border-0 py-1 px-3 shadow-none ${isMember ? 'bg-primary bg-opacity-10 text-primary' : 'bg-white bg-opacity-5 text-white'}`} style={{ fontSize: '0.6rem' }}>
+                                     {isMember ? 'MEMBER' : 'ESTABLISH LINK'}
                                    </button>
                                )}
                            </div>
@@ -519,87 +546,87 @@ const UserDashboard = () => {
               </div>
             </div>
           ) : activeTab === 'profile' ? (
-            <div className="glass-card h-100 p-5">
-              <div className="d-flex align-items-center gap-5 mb-5 pb-4 border-bottom border-secondary border-opacity-25">
-                <div className="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center text-primary fw-bold p-1 shadow" style={{ width: '120px', height: '120px', fontSize: '3rem', border: '3px solid rgba(59, 130, 246, 0.4)' }}>
+            <div className="premium-glass h-100 p-5 shadow-lg">
+              <div className="d-flex align-items-center gap-5 mb-5 pb-5 border-bottom border-white border-opacity-5">
+                <div className="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center text-primary fw-bold p-1 shadow-lg" style={{ width: '130px', height: '130px', fontSize: '3.5rem', border: '3px solid var(--primary-glow)' }}>
                   <div className="bg-dark rounded-circle w-100 h-100 d-flex align-items-center justify-content-center">
                     {user.name.charAt(0).toUpperCase()}
                   </div>
                 </div>
                 <div>
-                  <h2 className="mb-1 text-gradient fw-bold">{user.name}</h2>
-                  <p className="text-muted mb-3 fs-5">{user.email || 'id@matrix.assistly'}</p>
-                  <div className="d-flex gap-2">
-                    <span className="badge rounded-pill bg-primary bg-opacity-25 text-primary border border-primary px-3">{user.role}</span>
-                    {user.isVolunteer && <span className="badge rounded-pill bg-success bg-opacity-25 text-success border border-success px-3">ELITE VOLUNTEER</span>}
+                  <h2 className="mb-2 accent-gradient fw-bold" style={{ fontSize: '2.5rem' }}>{user.name}</h2>
+                  <p className="text-muted mb-4 fs-6 mono">{user.email || 'operator@matrix.assistly'}</p>
+                  <div className="d-flex gap-3">
+                    <span className="class-badge badge-open px-4 py-2">{user.role}</span>
+                    {user.isVolunteer && <span className="class-badge badge-done px-3 py-2">ELITE OPERATIVE</span>}
                   </div>
                 </div>
               </div>
 
               <div className="row g-4 mb-5">
                 <div className="col-md-6">
-                  <div className="p-4 rounded-4 bg-dark bg-opacity-50 border border-secondary text-center stat-card">
-                    <div className="text-muted small mb-2 text-uppercase tracking-wider">Missions Deployed</div>
-                    <div className="display-6 fw-bold text-gradient">{profileData?.stats?.requestsPosted || 0}</div>
+                  <div className="p-5 premium-glass border-0 bg-opacity-5 text-center" style={{ background: 'rgba(99, 102, 241, 0.05)' }}>
+                    <div className="text-muted small mb-2 text-uppercase tracking-widest fw-bold" style={{ fontSize: '0.65rem' }}>Missions Deployed</div>
+                    <div className="display-5 fw-bold accent-gradient mono">{profileData?.stats?.requestsPosted || 0}</div>
                   </div>
                 </div>
                 <div className="col-md-6">
-                  <div className="p-4 rounded-4 bg-dark bg-opacity-50 border border-secondary text-center stat-card">
-                    <div className="text-muted small mb-2 text-uppercase tracking-wider">Impact Verified</div>
-                    <div className="display-6 fw-bold text-info">{profileData?.stats?.requestsCompleted || 0}</div>
+                  <div className="p-5 premium-glass border-0 bg-opacity-5 text-center" style={{ background: 'rgba(16, 185, 129, 0.05)' }}>
+                    <div className="text-muted small mb-2 text-uppercase tracking-widest fw-bold" style={{ fontSize: '0.65rem' }}>Impact Rating</div>
+                    <div className="display-5 fw-bold text-secondary mono">{profileData?.stats?.requestsCompleted || 0}</div>
                   </div>
                 </div>
               </div>
 
-              <h5 className="mb-4 text-uppercase small tracking-widest text-muted fw-bold">Active Badges & Achievements</h5>
-              <div className="d-flex flex-wrap gap-3">
+              <h5 className="mb-4 text-uppercase small tracking-widest text-muted fw-bold" style={{ fontSize: '0.75rem' }}>Verified Achievements</h5>
+              <div className="d-flex flex-wrap gap-4">
                 {profileData?.achievements?.length > 0 ? profileData.achievements.map((ach, idx) => (
-                  <div key={idx} className="glass-card p-3 px-4 d-flex align-items-center gap-3 achievement-badge" style={{borderRadius: '16px', background: 'rgba(255,255,255,0.02)'}}>
-                    <div className="bg-warning bg-opacity-10 text-warning p-2 rounded-circle">
+                  <div key={idx} className="premium-glass p-3 px-4 d-flex align-items-center gap-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(245, 158, 11, 0.1)' }}>
+                    <div className="text-accent p-2">
                         <i className="bi bi-patch-check-fill fs-5"></i>
                     </div>
-                    <span className="fw-bold small">{ach}</span>
+                    <span className="fw-bold small opacity-75">{ach}</span>
                   </div>
                 )) : (
-                  <div className="text-center w-100 p-4 border border-dashed border-secondary rounded-4 text-muted small fst-italic">
-                    No badges earned yet. Complete missions within the syndicate to unlock achievements.
+                  <div className="text-center w-100 p-5 border border-dashed border-secondary border-opacity-25 rounded-4 text-muted small fst-italic opacity-50">
+                    No active achievements detected. Complete missions to unlock community badges.
                   </div>
                 )}
               </div>
             </div>
           ) : activeTab === 'admin_manage' && activeAdminComm ? (
-            <div className="glass-card h-100 p-4">
-              <div className="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
-                 <h4 className="mb-0 text-warning"><i className="bi bi-shield-lock-fill me-2"></i>Admin Console: <span className="text-light">{activeAdminComm.name}</span></h4>
-                 <button onClick={() => setActiveTab('communities')} className="btn btn-sm btn-outline-light rounded-pill px-3">Close Console</button>
+            <div className="premium-glass h-100 p-5 shadow-lg">
+              <div className="d-flex justify-content-between align-items-center mb-5 border-bottom border-white border-opacity-5 pb-4">
+                 <h4 className="mb-0 text-accent fw-bold"><i className="bi bi-shield-lock-fill me-3"></i>Admin Terminal: <span className="text-light">{activeAdminComm.name}</span></h4>
+                 <button onClick={() => setActiveTab('communities')} className="class-btn class-btn-secondary py-1 px-4 small">Exit Console</button>
               </div>
 
-              <h5 className="text-info mb-3">Pending Authorization Queue ({activeAdminComm.pendingMembers?.length || 0})</h5>
-              <div className="table-responsive mb-5 border border-secondary rounded">
-                  <table className="table table-borderless text-light align-middle mb-0 bg-dark">
+              <h5 className="text-primary mb-4 fw-bold small text-uppercase tracking-widest">Authorization Queue ({activeAdminComm.pendingMembers?.length || 0})</h5>
+              <div className="premium-glass overflow-hidden mb-5">
+                  <table className="class-table mb-0">
                       <tbody>
                           {activeAdminComm.pendingMembers?.length > 0 ? activeAdminComm.pendingMembers.map(m => (
-                              <tr key={m.id} className="border-bottom border-secondary">
-                                  <td className="ps-3"><div className="fw-bold">{m.name}</div><div className="small text-muted">{m.email}</div></td>
-                                  <td className="text-end pe-3">
-                                      <button onClick={() => handleAdminAction(activeAdminComm.id, m.id, 'approve')} className="btn btn-sm btn-success rounded-pill px-3 me-2">Authorize</button>
-                                      <button onClick={() => handleAdminAction(activeAdminComm.id, m.id, 'reject')} className="btn btn-sm btn-outline-danger rounded-pill px-3">Decline</button>
+                              <tr key={m.id}>
+                                  <td className="ps-4 py-4"><div className="fw-bold opacity-90">{m.name}</div><div className="small text-muted mono">{m.email}</div></td>
+                                  <td className="text-end pe-4 py-4">
+                                      <button onClick={() => handleAdminAction(activeAdminComm.id, m.id, 'approve')} className="class-btn btn-sm bg-secondary border-0 text-white px-4 me-2">Grant Access</button>
+                                      <button onClick={() => handleAdminAction(activeAdminComm.id, m.id, 'reject')} className="class-btn btn-sm bg-danger border-0 text-white px-4">Decline</button>
                                   </td>
                               </tr>
-                          )) : <tr><td className="text-center py-4 text-muted fst-italic">Queue is empty.</td></tr>}
+                          )) : <tr><td className="text-center py-5 text-muted fst-italic opacity-50">Queue is currently clear.</td></tr>}
                       </tbody>
                   </table>
               </div>
 
-              <h5 className="text-light mb-3">Current Validated Members</h5>
-              <div className="table-responsive border border-secondary rounded overflow-hidden">
-                  <table className="table table-borderless text-light align-middle mb-0 bg-dark bg-opacity-50">
+              <h5 className="text-light mb-4 fw-bold small text-uppercase tracking-widest">Authorized Personnel</h5>
+              <div className="premium-glass overflow-hidden">
+                  <table className="class-table mb-0">
                       <tbody>
                           {activeAdminComm.members?.map(m => (
-                              <tr key={m.id} className="border-bottom border-light border-opacity-10">
-                                  <td className="ps-3"><div className="fw-bold">{m.name} {m.id === user.id && <span className="badge bg-warning text-dark ms-2">Admin</span>}</div></td>
-                                  <td className="text-end pe-3">
-                                      {m.id !== user.id && <button onClick={() => handleAdminAction(activeAdminComm.id, m.id, 'remove')} className="btn btn-sm btn-outline-danger rounded-pill px-3 mt-1">Revoke Access</button>}
+                              <tr key={m.id}>
+                                  <td className="ps-4 py-4"><div className="fw-bold opacity-90">{m.name} {m.id === user.id && <span className="class-badge badge-progress ms-2" style={{ fontSize: '0.5rem' }}>Root Admin</span>}</div></td>
+                                  <td className="text-end pe-4 py-4">
+                                      {m.id !== user.id && <button onClick={() => handleAdminAction(activeAdminComm.id, m.id, 'remove')} className="class-btn btn-sm bg-danger border-0 text-white px-4">Revoke</button>}
                                   </td>
                               </tr>
                           ))}
@@ -612,38 +639,41 @@ const UserDashboard = () => {
       </div>
 
       {showModal && (
-        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style={{backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1050}}>
-          <div className="glass-card animate-fade-in mx-3 p-4 shadow-lg border-primary border-opacity-25" style={{width: '640px'}}>
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h4 className="text-gradient mb-0">Initialize Mission Block</h4>
-                <div className="badge bg-primary bg-opacity-10 text-primary border border-primary small px-2">ALPHA-LEVEL ACCESS</div>
+        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style={{backgroundColor: 'rgba(2, 6, 23, 0.9)', backdropFilter: 'blur(10px)', zIndex: 1050}}>
+          <div className="premium-glass animate-in mx-3 p-5 shadow-2xl border-white border-opacity-5" style={{width: '680px'}}>
+            <div className="d-flex justify-content-between align-items-center mb-5">
+                <div>
+                  <h4 className="accent-gradient fw-bold mb-1">Initialize Directive</h4>
+                  <p className="text-muted small mb-0">Prepare payload for community broadcast.</p>
+                </div>
+                <div className="class-badge badge-open px-3">ENCRYPTED SYNC</div>
             </div>
             <form onSubmit={handleCreateRequest}>
-              <div className="mb-3">
-                <label className="small text-muted mb-1 text-uppercase fw-bold">Directive Title</label>
-                <input required type="text" className="form-control bg-dark border-secondary text-light h-100" style={{height: '45px'}} value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="Deployment ID..." />
+              <div className="mb-4">
+                <label className="small text-muted mb-2 text-uppercase tracking-widest fw-bold" style={{ fontSize: '0.6rem' }}>Directive Designation</label>
+                <input required type="text" className="class-input" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="Title of mission..." />
               </div>
-              <div className="mb-3">
-                <label className="small text-muted mb-1 text-uppercase fw-bold">Payload Description</label>
-                <textarea required className="form-control bg-dark border-secondary text-light" rows="3" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Detailed instructions for the field operatives..."></textarea>
+              <div className="mb-4">
+                <label className="small text-muted mb-2 text-uppercase tracking-widest fw-bold" style={{ fontSize: '0.6rem' }}>Payload Logistics</label>
+                <textarea required className="class-input" rows="4" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Detailed requirements..."></textarea>
               </div>
-              <div className="mb-3">
-                <label className="small text-muted mb-2 text-uppercase fw-bold">Target Coordinates (Click to Pin)</label>
-                <div className="rounded-4 border border-secondary overflow-hidden position-relative" style={{height: '240px'}}>
+              <div className="mb-4">
+                <label className="small text-muted mb-3 text-uppercase tracking-widest fw-bold" style={{ fontSize: '0.6rem' }}>Target Extraction Coordinates</label>
+                <div className="rounded-4 border border-white border-opacity-5 overflow-hidden position-relative shadow-inner" style={{height: '260px'}}>
                   <RequestMap 
                     onLocationSelect={(lat, lng) => setFormData({...formData, latitude: lat, longitude: lng})} 
                     selectedLocation={{lat: formData.latitude, lng: formData.longitude}}
                     requests={[]}
                   />
-                  <div className="position-absolute bottom-0 start-0 w-100 bg-dark bg-opacity-75 p-2 px-3 small border-top border-secondary">
-                      <span className="text-muted">LAT:</span> <span className="text-info mono">{formData.latitude.toFixed(6)}</span> 
-                      <span className="text-muted ms-3">LNG:</span> <span className="text-info mono">{formData.longitude.toFixed(6)}</span>
+                  <div className="position-absolute bottom-0 start-0 w-100 bg-dark bg-opacity-80 p-3 px-4 small border-top border-white border-opacity-5 d-flex justify-content-between animate-pulse">
+                      <div><span className="text-muted small">LAT:</span> <span className="text-primary mono fw-bold">{formData.latitude.toFixed(6)}</span></div>
+                      <div><span className="text-muted small">LNG:</span> <span className="text-primary mono fw-bold">{formData.longitude.toFixed(6)}</span></div>
                   </div>
                 </div>
               </div>
-              <div className="d-flex justify-content-end gap-3 mt-4 pt-4 border-top border-secondary border-opacity-25">
-                <button type="button" onClick={() => setShowModal(false)} className="btn btn-link text-muted text-decoration-none px-4">ABORT</button>
-                <button type="submit" disabled={loading} className="neon-button px-5">{loading ? 'TRANSMITTING...' : 'BROADCAST MISSION'}</button>
+              <div className="d-flex justify-content-end gap-3 mt-5 pt-4 border-top border-white border-opacity-5">
+                <button type="button" onClick={() => setShowModal(false)} className="class-btn class-btn-secondary px-4">ABORT</button>
+                <button type="submit" disabled={loading} className="class-btn px-5">{loading ? 'UPLOADING...' : 'BROADCAST DIRECTIVE'}</button>
               </div>
             </form>
           </div>
@@ -651,25 +681,28 @@ const UserDashboard = () => {
       )}
 
       {showCreateCommModal && (
-        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style={{backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1050}}>
-          <div className="glass-card animate-fade-in mx-3 p-4 shadow-lg border-info border-opacity-25" style={{width: '500px'}}>
-            <h4 className="text-gradient mb-4">Establish New Syndicate Community</h4>
+        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style={{backgroundColor: 'rgba(2, 6, 23, 0.9)', backdropFilter: 'blur(10px)', zIndex: 1050}}>
+          <div className="premium-glass animate-in mx-3 p-5 shadow-2xl border-white border-opacity-5" style={{width: '540px'}}>
+            <div className="mb-5">
+              <h4 className="accent-gradient fw-bold mb-1">Establish New Precinct</h4>
+              <p className="text-muted small mb-0">Define governance for a new community network.</p>
+            </div>
             <form onSubmit={handleCreateCommunity}>
-              <div className="mb-3">
-                <label className="small text-muted mb-1 text-uppercase fw-bold">Syndicate Name</label>
-                <input required type="text" className="form-control bg-dark border-secondary text-light" value={commFormData.name} onChange={e => setCommFormData({...commFormData, name: e.target.value})} placeholder="Community Designation..." />
+              <div className="mb-4">
+                <label className="small text-muted mb-2 text-uppercase tracking-widest fw-bold" style={{ fontSize: '0.6rem' }}>Precinct Identifier</label>
+                <input required type="text" className="class-input" value={commFormData.name} onChange={e => setCommFormData({...commFormData, name: e.target.value})} placeholder="Community Name..." />
               </div>
-              <div className="mb-3">
-                <label className="small text-muted mb-1 text-uppercase fw-bold">Directives & Purpose</label>
-                <textarea required className="form-control bg-dark border-secondary text-light" rows="3" value={commFormData.description} onChange={e => setCommFormData({...commFormData, description: e.target.value})} placeholder="Mission goals and community guidelines..."></textarea>
+              <div className="mb-4">
+                <label className="small text-muted mb-2 text-uppercase tracking-widest fw-bold" style={{ fontSize: '0.6rem' }}>Directives & Scope</label>
+                <textarea required className="class-input" rows="4" value={commFormData.description} onChange={e => setCommFormData({...commFormData, description: e.target.value})} placeholder="Mission goals..."></textarea>
               </div>
-              <div className="form-check form-switch mb-4 mt-3">
-                <input className="form-check-input" type="checkbox" id="privateSwitch" checked={commFormData.isPrivate} onChange={e => setCommFormData({...commFormData, isPrivate: e.target.checked})} style={{cursor: 'pointer'}} />
-                <label className="form-check-label text-muted ms-2 small fw-bold" htmlFor="privateSwitch">ENCRYPTED ACCESS (Requires Authorization)</label>
+              <div className="form-check form-switch mb-5 mt-4 d-flex align-items-center gap-3">
+                <input className="form-check-input mt-0" type="checkbox" id="privateSwitch" checked={commFormData.isPrivate} onChange={e => setCommFormData({...commFormData, isPrivate: e.target.checked})} style={{width: '2.5rem', height: '1.2rem', cursor: 'pointer'}} />
+                <label className="form-check-label text-muted small fw-bold tracking-wider" htmlFor="privateSwitch">ENCRYPTED ENTRY (Requires Admin Auth)</label>
               </div>
-              <div className="d-flex justify-content-end gap-3 mt-4 pt-3 border-top border-secondary border-opacity-25">
-                <button type="button" onClick={() => setShowCreateCommModal(false)} className="btn btn-link text-muted text-decoration-none px-4">CANCEL</button>
-                <button type="submit" disabled={loading} className="btn btn-info rounded-pill px-5 fw-bold text-dark shadow-sm">{loading ? 'ESTABLISHING...' : 'ESTABLISH SYNDICATE'}</button>
+              <div className="d-flex justify-content-end gap-3 mt-4 pt-4 border-top border-white border-opacity-5">
+                <button type="button" onClick={() => setShowCreateCommModal(false)} className="class-btn class-btn-secondary px-4">CANCEL</button>
+                <button type="submit" disabled={loading} className="class-btn px-5 bg-secondary border-0">{loading ? 'ESTABLISHING...' : 'ESTABLISH PRECINCT'}</button>
               </div>
             </form>
           </div>

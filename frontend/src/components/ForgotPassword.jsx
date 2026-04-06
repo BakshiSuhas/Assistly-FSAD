@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -42,56 +42,59 @@ const ForgotPassword = () => {
 
   return (
     <div className="container mt-5 pt-5 d-flex justify-content-center">
-      <div className="glass-card w-100 p-4" style={{ maxWidth: '450px' }}>
-        <div className="text-center mb-4 mt-2">
-          <h2 className="text-gradient mb-2">Reset Password</h2>
-          <p className="text-light" style={{ opacity: 0.8 }}>Set a new password for your account.</p>
+      <div className="premium-glass w-100 p-5 animate-in" style={{ maxWidth: '450px' }}>
+        <div className="text-center mb-5">
+          <h2 className="accent-gradient mb-3" style={{ fontSize: '2rem' }}>Reset Access</h2>
+          <p className="text-muted small">Update your neural security credentials.</p>
         </div>
 
-        {error && <div className="alert alert-danger py-2 text-center small fw-bold">{error}</div>}
-        {success && <div className="alert alert-success py-2 text-center small fw-bold">{success}</div>}
+        {error && <div className="alert bg-danger bg-opacity-10 text-danger border-danger border-opacity-25 py-3 text-center small fw-bold mb-4">{error}</div>}
+        {success && <div className="alert bg-secondary bg-opacity-10 text-secondary border-secondary border-opacity-25 py-3 text-center small fw-bold mb-4">{success}</div>}
 
         <form onSubmit={handleReset}>
-          <div className="mb-3">
-            <label className="form-label text-light small text-uppercase tracking-wide">Email Address</label>
+          <div className="mb-4">
+            <label className="form-label text-muted small text-uppercase tracking-wider fw-bold mb-2">Email Identity</label>
             <input
               type="email"
-              className="form-control bg-dark text-light border-secondary"
+              className="class-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="mb-3">
-            <label className="form-label text-light small text-uppercase tracking-wide">New Password</label>
-            <input
-              type="password"
-              className="form-control bg-dark text-light border-secondary"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              minLength={6}
+              placeholder="id@community.net"
               required
             />
           </div>
           <div className="mb-4">
-            <label className="form-label text-light small text-uppercase tracking-wide">Confirm Password</label>
+            <label className="form-label text-muted small text-uppercase tracking-wider fw-bold mb-2">New Security Key</label>
             <input
               type="password"
-              className="form-control bg-dark text-light border-secondary"
+              className="class-input"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="••••••••"
+              minLength={6}
+              required
+            />
+          </div>
+          <div className="mb-5">
+            <label className="form-label text-muted small text-uppercase tracking-wider fw-bold mb-2">Confirm New Key</label>
+            <input
+              type="password"
+              className="class-input"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="••••••••"
               minLength={6}
               required
             />
           </div>
 
-          <button type="submit" className="neon-button w-100 mb-3" disabled={loading}>
-            {loading ? 'Updating...' : 'Reset Password'}
+          <button type="submit" className="class-btn w-100 py-3 mb-3" disabled={loading}>
+            {loading ? 'Transmitting...' : 'Update Credentials'}
           </button>
         </form>
 
-        <p className="text-center text-light mt-3 mb-0 small" style={{ opacity: 0.8 }}>
-          Back to <Link to="/login" className="text-info text-decoration-none fw-bold">Login</Link>
+        <p className="text-center text-muted mt-4 mb-0 small">
+          Return to <Link to="/login" className="text-primary text-decoration-none fw-bold">Login Terminal</Link>
         </p>
       </div>
     </div>

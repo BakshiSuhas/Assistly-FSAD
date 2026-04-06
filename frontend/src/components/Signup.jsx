@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
@@ -101,85 +101,89 @@ const Signup = () => {
 
   return (
     <div className="container mt-5 pt-3 mb-5 d-flex justify-content-center">
-      <div className="glass-card w-100 p-0 overflow-hidden" style={{maxWidth: '500px'}}>
+      <div className="premium-glass w-100 p-0 overflow-hidden animate-in" style={{maxWidth: '500px'}}>
         
         {/* Tab Header for strict Role Segregation */}
-        <div className="d-flex border-bottom border-secondary bg-dark text-center">
-             <div onClick={() => {setActiveTab('user'); setError(''); setStep(1);}} className={`flex-grow-1 p-3 cursor-pointer ${activeTab==='user'?'bg-primary text-white':'text-secondary'}`} style={{cursor: 'pointer', fontWeight: 'bold'}}>
-                 Join as User
+        <div className="d-flex text-center" style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--glass-border)' }}>
+             <div onClick={() => {setActiveTab('user'); setError(''); setStep(1);}} className={`flex-grow-1 p-4 cursor-pointer transition-all ${activeTab==='user'?'text-primary border-bottom border-primary':'text-muted opacity-50'}`} style={{cursor: 'pointer', fontWeight: 'bold', letterSpacing: '1px', fontSize: '0.8rem', textTransform: 'uppercase'}}>
+                 Resident Profile
              </div>
-             <div onClick={() => {setActiveTab('admin'); setError('');}} className={`flex-grow-1 p-3 cursor-pointer ${activeTab==='admin'?'bg-danger text-white':'text-secondary'}`} style={{cursor: 'pointer', fontWeight: 'bold'}}>
-                 Platform Admin Setup
+             <div onClick={() => {setActiveTab('admin'); setError('');}} className={`flex-grow-1 p-4 cursor-pointer transition-all ${activeTab==='admin'?'text-danger border-bottom border-danger':'text-muted opacity-50'}`} style={{cursor: 'pointer', fontWeight: 'bold', letterSpacing: '1px', fontSize: '0.8rem', textTransform: 'uppercase'}}>
+                 Admin Setup
              </div>
         </div>
 
-        <div className="p-4">
-            <div className="text-center mb-4 mt-2">
-            <h2 className="text-gradient mb-2">
-                {activeTab === 'user' ? 'Join Assistly' : step === 1 ? '1. Admin Registration' : '2. Community Setup'}
+        <div className="p-5">
+            <div className="text-center mb-5">
+            <h2 className="accent-gradient mb-3" style={{ fontSize: '2rem' }}>
+                {activeTab === 'user' ? 'Join Community' : step === 1 ? 'Admin Registry' : 'Precinct Setup'}
             </h2>
-            <p className="text-light" style={{opacity: 0.8}}>
-                {step === 1 ? 'Create an account to begin configuring.' : `Logged in securely as ${formData.email}`}
+            <p className="text-muted small">
+                {step === 1 ? 'Initialize your operative profile.' : `Authenticated as ${formData.email.split('@')[0]}`}
             </p>
             </div>
 
-            {error && <div className="alert alert-danger py-2 border-danger text-center fw-bold">{error}</div>}
-            {success && <div className="alert alert-success py-2">{success}</div>}
+            {error && <div className="alert bg-danger bg-opacity-10 text-danger border-danger border-opacity-25 py-3 text-center small fw-bold mb-4">{error}</div>}
+            {success && <div className="alert bg-secondary bg-opacity-10 text-secondary border-secondary border-opacity-25 py-3 text-center small fw-bold mb-4">{success}</div>}
 
             {step === 1 && (
                 <form onSubmit={handleStandardSignup}>
-                <div className="mb-3">
-                    <label className="form-label text-light small text-uppercase tracking-wide">Full Name</label>
-                    <input type="text" name="name" className="form-control bg-dark text-light border-secondary" placeholder="Jane Doe" value={formData.name} onChange={handleChange} required />
+                <div className="mb-4">
+                    <label className="form-label text-muted small text-uppercase tracking-wider fw-bold mb-2">Display Alias</label>
+                    <input type="text" name="name" className="class-input" placeholder="Operative Name" value={formData.name} onChange={handleChange} required />
                 </div>
-                <div className="mb-3">
-                    <label className="form-label text-light small text-uppercase tracking-wide">Email Address</label>
-                    <input type="email" name="email" className="form-control bg-dark text-light border-secondary" placeholder="name@example.com" value={formData.email} onChange={handleChange} required />
+                <div className="mb-4">
+                    <label className="form-label text-muted small text-uppercase tracking-wider fw-bold mb-2">Email Identity</label>
+                    <input type="email" name="email" className="class-input" placeholder="id@community.net" value={formData.email} onChange={handleChange} required />
                 </div>
-                <div className="row mb-4">
-                    <div className="col-md-6 mb-3 mb-md-0">
-                    <label className="form-label text-light small text-uppercase tracking-wide">Password</label>
-                    <input type="password" name="password" className="form-control bg-dark text-light border-secondary" placeholder="••••••••" value={formData.password} onChange={handleChange} required />
+                <div className="row mb-5">
+                    <div className="col-md-6 mb-4 mb-md-0">
+                    <label className="form-label text-muted small text-uppercase tracking-wider fw-bold mb-2">Security Key</label>
+                    <input type="password" name="password" className="class-input" placeholder="••••••••" value={formData.password} onChange={handleChange} required />
                     </div>
                     <div className="col-md-6">
-                    <label className="form-label text-light small text-uppercase tracking-wide">Confirm</label>
-                    <input type="password" name="confirmPassword" className="form-control bg-dark text-light border-secondary" placeholder="••••••••" value={formData.confirmPassword} onChange={handleChange} required />
+                    <label className="form-label text-muted small text-uppercase tracking-wider fw-bold mb-2">Confirm Key</label>
+                    <input type="password" name="confirmPassword" className="class-input" placeholder="••••••••" value={formData.confirmPassword} onChange={handleChange} required />
                     </div>
                 </div>
                 
-                <button type="submit" className={`neon-button w-100 mb-3 ${activeTab === 'admin' ? 'neo-danger' : ''}`} disabled={loading} style={activeTab === 'admin' ? {backgroundColor: '#dc3545', boxShadow: 'none'} : {}}>
-                    {loading ? 'Processing...' : activeTab === 'user' ? 'Sign Up' : 'Next: Setup Community'}
+                <button type="submit" className={`class-btn w-100 py-3 mb-3 ${activeTab === 'admin' ? 'bg-danger shadow-none' : ''}`} disabled={loading}>
+                    {loading ? 'Initializing...' : activeTab === 'user' ? 'Register Profile' : 'Next: Precinct Configuration'}
                 </button>
                 </form>
             )}
 
             {step === 2 && activeTab === 'admin' && (
                 <form onSubmit={handleSetupCommunity}>
-                    <div className="mb-3">
-                        <label className="form-label text-light opacity-75 small text-uppercase">Community Name</label>
-                        <input type="text" className="form-control bg-dark text-light border-secondary" placeholder="e.g. Downtown Neighbors" required value={communityName} onChange={e => setCommunityName(e.target.value)} />
-                    </div>
                     <div className="mb-4">
-                        <label className="form-label text-light opacity-75 small text-uppercase">Rules & Purpose</label>
-                        <textarea className="form-control bg-dark text-light border-secondary" rows="3" required value={communityDesc} onChange={e => setCommunityDesc(e.target.value)} placeholder="Describe your group's focus..."></textarea>
+                        <label className="form-label text-muted small text-uppercase tracking-wider fw-bold mb-2">Precinct Designation</label>
+                        <input type="text" className="class-input" placeholder="e.g. Sector-7 Neighbors" required value={communityName} onChange={e => setCommunityName(e.target.value)} />
                     </div>
-                    <button type="submit" disabled={loading} className="btn w-100 fw-bold shadow-sm" style={{backgroundColor: '#ffc107', color: '#000'}}>
-                        {loading ? 'Booting Space...' : 'Launch Private Community'}
+                    <div className="mb-5">
+                        <label className="form-label text-muted small text-uppercase tracking-wider fw-bold mb-2">Directives & Scope</label>
+                        <textarea className="class-input" rows="4" required value={communityDesc} onChange={e => setCommunityDesc(e.target.value)} placeholder="Mission goals and community guidelines..."></textarea>
+                    </div>
+                    <button type="submit" disabled={loading} className="class-btn w-100 py-3" style={{backgroundColor: 'var(--accent)', color: '#000', border: 'none'}}>
+                        {loading ? 'Establishing Framework...' : 'Launch Precinct Platform'}
                     </button>
                 </form>
             )}
 
             {step === 1 && (
                 <>
-                <div className="text-center my-3"><span className="text-muted small px-3 bg-dark rounded-pill">OR</span></div>
+                <div className="d-flex align-items-center my-4">
+                  <hr className="flex-grow-1 border-secondary opacity-25" />
+                  <span className="text-muted small px-3 text-uppercase tracking-widest opacity-50" style={{ fontSize: '0.6rem' }}>External Registry</span>
+                  <hr className="flex-grow-1 border-secondary opacity-25" />
+                </div>
                 <div className="google-login-wrapper mt-0 pt-0 border-0">
-                <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => setError('Google Log error')} theme="filled_black" size="large" width="100%" />
+                <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => setError('Google Auth Failure')} theme="filled_black" size="large" width="100%" shape="pill" />
                 </div>
                 </>
             )}
 
-            <p className="text-center text-light mt-4 mb-0 small" style={{opacity: 0.8}}>
-            Already have an account? <Link to="/login" className="text-info text-decoration-none fw-bold">Sign In</Link>
+            <p className="text-center text-muted mt-5 mb-0 small">
+            Existing operative? <Link to="/login" className="text-primary text-decoration-none fw-bold">Sign In</Link>
             </p>
         </div>
       </div>
